@@ -21,12 +21,8 @@ public class NodeServer {
     private Runnable mListeningTask;
     private HashSet<PeerHandler> mPeerHandlers;
     private MessageReader mMessageReader;
-
     private HashMap<InetAddress, Socket> mDispatcherSockets;
-
     private final ExecutorService mExecutorService = Executors.newFixedThreadPool(DEFAULT_BACKLOG);
-
-
 
     public NodeServer(int serverPort, MessageReader messageReader, int backlog) throws IOException {
         mServerSocket = new ServerSocket(serverPort, backlog);
@@ -43,7 +39,6 @@ public class NodeServer {
     }
 
     public void startServer() {
-
         mListeningTask = new Runnable() {
             @Override
             public void run() {
@@ -58,10 +53,8 @@ public class NodeServer {
                 }
             }
         };
-
         mExecutorService.submit(mListeningTask);
     }
-
 
     public void dispatchMessage(MessageType type, InetAddress peerAddress, Serializable message) throws IOException{
         Socket dispatchSocket = new Socket(peerAddress, DEFAULT_PORT);
@@ -72,7 +65,6 @@ public class NodeServer {
         oos.write(type.getId());
         oos.writeObject(message);
         oos.flush();
-
     }
 
     public Collection<InetAddress> getConnectedPeers(){
@@ -84,12 +76,12 @@ public class NodeServer {
     public void closeDispatching(InetAddress peerAddress) throws IOException{
         Socket dispatchSocket = mDispatcherSockets.get(peerAddress);
         dispatchSocket.close();
-
     }
 
     public void closeReading() throws IOException{
-        for(PeerHandler peer : mPeerHandlers)
+        for(PeerHandler peer : mPeerHandlers) {
             peer.closeConnection();
+        }
     }
 
     public void shutDownServer() throws IOException {
@@ -97,24 +89,22 @@ public class NodeServer {
         mServerSocket.close();
     }
 
-
     /**
      * Inner class aiming to handle reading from remote machines.
      */
     private class PeerHandler {
 
         private Socket mSocket;
-
         private DataInputStream mInputStream;
         private DataOutputStream mOutputStream;
         private Runnable mListenToPeerTask;
         private Future<?> mPendingListeningTask;
+
         public PeerHandler(Socket socket) throws IOException {
             mSocket = socket;
             mOutputStream = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
             mInputStream = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
             mOutputStream.flush();
-
             mListenToPeerTask = new Runnable() {
                 @Override
                 public void run() {
@@ -129,7 +119,6 @@ public class NodeServer {
                     }
                 }
             };
-
             mPendingListeningTask = mExecutorService.submit(mListenToPeerTask);
         }
 
@@ -143,8 +132,6 @@ public class NodeServer {
             return mSocket;
         }
 
-
     }
-
 
 }
