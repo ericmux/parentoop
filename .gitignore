@@ -1,8 +1,15 @@
 #################
-## Map-Reduce input
+## Parentoop input
 #################
 
 *.txt
+
+#################
+## Artifact crap
+#################
+
+*.MF
+
 
 #################
 ## Eclipse
