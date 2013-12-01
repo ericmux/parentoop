@@ -8,7 +8,19 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="Slave" scope="PROVIDED" />
-    <orderEntry type="library" name="sqlite-jdbc-3.7" level="application" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../libs/sqlite-jdbc-3.7.2" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/../libs/sqlite-jdbc-3.7.2" />
+        </SOURCES>
+        <jarDirectory url="file://$MODULE_DIR$/../libs/sqlite-jdbc-3.7.2" recursive="false" />
+        <jarDirectory url="file://$MODULE_DIR$/../libs/sqlite-jdbc-3.7.2" recursive="false" type="SOURCES" />
+      </library>
+    </orderEntry>
   </component>
 </module>
 
