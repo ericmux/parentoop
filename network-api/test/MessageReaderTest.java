@@ -6,16 +6,19 @@ import org.junit.Test;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 
+import static org.junit.Assert.assertEquals;
+
 public class MessageReaderTest {
 
     @Test
     public void testMessageReceived() throws IOException{
 
+        final String sent = "test message";
+
         MessageReader reader = new MessageReader() {
             @Override
             public void read(MessageType type, ObjectInputStream inputStream) throws IOException, ClassNotFoundException{
-                System.out.println(type);
-                System.out.println((String) inputStream.readObject());
+                assertEquals(inputStream.readObject(), sent);
             }
         };
 
@@ -24,7 +27,7 @@ public class MessageReaderTest {
 
         listeningNode.startServer();
 
-        dispatchingNode.dispatchMessage(MessageType.NOP, listeningNode.getServerAddress(), "test_message");
+        dispatchingNode.dispatchMessage(MessageType.NOP, listeningNode.getServerAddress(), sent);
     }
 
 

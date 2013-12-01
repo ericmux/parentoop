@@ -14,7 +14,7 @@ import java.util.concurrent.Future;
 public class NodeServer {
 
     // threshold on the number of simultaneous client/server socket connections.
-    private static final int DEFAULT_BACKLOG = 200;
+    public static final int DEFAULT_BACKLOG = 200;
     public static final int DEFAULT_PORT = 13371;
 
     private ServerSocket mServerSocket;
