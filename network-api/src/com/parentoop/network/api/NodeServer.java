@@ -15,7 +15,7 @@ public class NodeServer {
 
     // threshold on the number of simultaneous client/server socket connections.
     private static final int DEFAULT_BACKLOG = 200;
-    private static final int DEFAULT_PORT = 13371;
+    public static final int DEFAULT_PORT = 13371;
 
     private ServerSocket mServerSocket;
     private Runnable mListeningTask;
@@ -57,12 +57,15 @@ public class NodeServer {
     }
 
     public void dispatchMessage(MessageType type, InetAddress peerAddress, Serializable message) throws IOException{
-        Socket dispatchSocket = new Socket(peerAddress, DEFAULT_PORT);
+        Socket dispatchSocket;
+        if(!mDispatcherSockets.containsKey(peerAddress))
+            dispatchSocket = new Socket(peerAddress, DEFAULT_PORT);
+        else dispatchSocket = mDispatcherSockets.get(peerAddress);
         mDispatcherSockets.put(dispatchSocket.getInetAddress(), dispatchSocket);
         OutputStream sos = dispatchSocket.getOutputStream();
 
         ObjectOutputStream oos = new ObjectOutputStream(sos);
-        oos.write(type.getId());
+        oos.writeInt(type.getId());
         oos.writeObject(message);
         oos.flush();
     }
@@ -71,6 +74,10 @@ public class NodeServer {
         Collection<InetAddress> peers = new HashSet<>();
         for(PeerHandler peerHandler : mPeerHandlers) peers.add(peerHandler.getSocket().getInetAddress());
         return peers;
+    }
+
+    public InetAddress getServerAddress() {
+        return mServerSocket.getInetAddress();
     }
 
     public void closeDispatching(InetAddress peerAddress) throws IOException{
@@ -95,24 +102,25 @@ public class NodeServer {
     private class PeerHandler {
 
         private Socket mSocket;
-        private DataInputStream mInputStream;
-        private DataOutputStream mOutputStream;
+        private ObjectInputStream mInputStream;
+        private ObjectOutputStream mOutputStream;
         private Runnable mListenToPeerTask;
         private Future<?> mPendingListeningTask;
 
         public PeerHandler(Socket socket) throws IOException {
             mSocket = socket;
-            mOutputStream = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
-            mInputStream = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+            mOutputStream = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+            mInputStream = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
             mOutputStream.flush();
             mListenToPeerTask = new Runnable() {
                 @Override
                 public void run() {
                     while (!mSocket.isClosed() && !mSocket.isInputShutdown() && !Thread.interrupted()) {
                         try {
-                            int code = mInputStream.readByte();
+                            int code = mInputStream.readInt();
                             MessageType type = MessageType.fromId(code);
-                            mMessageReader.read(type,mInputStream);
+                            mMessageReader.read(type, mInputStream);
+                            mInputStream.close();
                         } catch (Exception e) {
                             e.printStackTrace();
                         }

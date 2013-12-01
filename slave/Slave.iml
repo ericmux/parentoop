@@ -8,6 +8,7 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="NetworkApi" />
+    <orderEntry type="module" module-name="SqlLiteStorage" scope="RUNTIME" />
   </component>
 </module>
 
