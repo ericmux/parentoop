@@ -1,4 +1,4 @@
-package com.paerentoop.master.dummy;
+package com.parentoop.master.dummy;
 
 /**
  * Created with IntelliJ IDEA.
