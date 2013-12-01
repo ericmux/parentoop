@@ -81,7 +81,6 @@ public class SqlLiteStorage implements SlaveStorage {
         if (!result.next()) {
             mQueryHelper.close();
             createKey(key);
-            // If StackOverflowException, it is not creating they key
             return selectOrCreateKeyId(key);
         }
         int id = result.getInt("id");
@@ -104,6 +103,7 @@ public class SqlLiteStorage implements SlaveStorage {
             byte[] bytes = SerializableConverter.toByteArray(value);
             mQueryHelper.update(INSERT_VALUE_QUERY, id, (Object) bytes).close();
         } catch (SQLException | IOException e) {
+            try { terminate(); } catch (Exception exc) { /* No-op */ }
             AssertionError error = new AssertionError();
             error.initCause(e);
             throw error;
@@ -122,6 +122,7 @@ public class SqlLiteStorage implements SlaveStorage {
             ResultSet result = mQueryHelper.get(SELECT_DATA_BY_KEY_QUERY, key);
             return new ResultIterable(new ResultIterator(result));
         } catch (SQLException | IOException e) {
+            try { terminate(); } catch (Exception exc) { /* No-op */ }
             AssertionError error = new AssertionError();
             error.initCause(e);
             throw error;

@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Stack;
 
 // TODO: Logger
-public class SqlQueryHelper {
+/* package private */ class SqlQueryHelper {
 
     private final Connection mConnection;
     // Any better ideas?
