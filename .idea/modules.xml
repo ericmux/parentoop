@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/master/Master.iml" filepath="$PROJECT_DIR$/master/Master.iml" />
       <module fileurl="file://$PROJECT_DIR$/network-api/NetworkApi.iml" filepath="$PROJECT_DIR$/network-api/NetworkApi.iml" />
       <module fileurl="file://$PROJECT_DIR$/slave/Slave.iml" filepath="$PROJECT_DIR$/slave/Slave.iml" />
+      <module fileurl="file://$PROJECT_DIR$/sql-lite-storage/SqlLiteStorage.iml" filepath="$PROJECT_DIR$/sql-lite-storage/SqlLiteStorage.iml" />
     </modules>
   </component>
 </project>
