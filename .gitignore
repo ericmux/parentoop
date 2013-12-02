@@ -42,6 +42,7 @@ out/
 !.idea/modules.xml
 !.idea/encodings.xml
 !.idea/vcs.xml
+!.idea/libraries/
 *.eml
 keys/
 
