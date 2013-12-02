@@ -3,12 +3,13 @@ package com.parentoop.master.core;
 import com.parentoop.client.ui.InputReader;
 import com.parentoop.client.ui.Mapper;
 import com.parentoop.client.ui.Reducer;
-import com.parentoop.network.api.MessageReader;
-import com.parentoop.network.api.MessageType;
+import com.parentoop.network.api.messaging.MessageReader;
+import com.parentoop.network.api.messaging.MessageType;
 import com.parentoop.network.api.NodeServer;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.net.InetAddress;
 
 public class MasterNode {
 
@@ -37,7 +38,7 @@ public class MasterNode {
     private void setUpMessageReader(MessageReader reader){
         mMasterReader = new MessageReader() {
             @Override
-            public void read(MessageType type, ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
+            public void read(MessageType type, ObjectInputStream inputStream, InetAddress senderAddress) throws IOException, ClassNotFoundException {
                 //TODO
             }
         };
