@@ -1,11 +1,9 @@
 package com.parentoop.network.api.messaging;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.net.InetAddress;
+import com.parentoop.network.api.Message;
+import com.parentoop.network.api.PeerCommunicator;
 
 public interface MessageHandler {
 
-    public void handle(MessageType messageType, ObjectInputStream inputStream, InetAddress senderAddress) throws IOException, ClassNotFoundException;
-
+    public void handle(Message message, PeerCommunicator sender);
 }

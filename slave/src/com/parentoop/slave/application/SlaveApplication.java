@@ -2,16 +2,15 @@ package com.parentoop.slave.application;
 
 import com.parentoop.client.ui.Mapper;
 import com.parentoop.client.ui.Reducer;
+import com.parentoop.network.api.Message;
 import com.parentoop.network.api.NodeServer;
-import com.parentoop.network.api.messaging.MessageType;
+import com.parentoop.network.api.PeerCommunicator;
 import com.parentoop.slave.listeners.master.MasterRouter;
 import com.parentoop.slave.listeners.slave.SlaveRouter;
 import com.parentoop.slave.utils.ServiceUtils;
 import com.parentoop.storage.api.SlaveStorage;
 
 import java.io.IOException;
-import java.io.Serializable;
-import java.net.InetAddress;
 
 public class SlaveApplication implements Initializable, Finalizable {
 
@@ -50,16 +49,17 @@ public class SlaveApplication implements Initializable, Finalizable {
 
     @Override
     public void terminate() throws Exception {
-        mSlaveListener.shutDownServer();
-        mMasterListener.shutDownServer();
+        mSlaveListener.shutdown();
+        mMasterListener.shutdown();
         mSlaveStorage.terminate();
     }
 
-    public void sendKeyValues(String key, InetAddress senderAddress) throws IOException {
+    public void sendKeyValues(String key, PeerCommunicator sender) throws IOException {
+        // TODO: Use common message types from Core module
         for (Object value : mSlaveStorage.read(key)) {
-            mMasterListener.dispatchMessage(MessageType.DATA_VALUE, senderAddress, (Serializable) value);
+            sender.dispatchMessage(new Message(-1, value));
         }
-        mMasterListener.dispatchMessage(MessageType.END_OF_VALUE_STREAM, senderAddress, null);
+        sender.dispatchMessage(new Message(-1));
     }
 
     public SlaveStorage getSlaveStorage() {

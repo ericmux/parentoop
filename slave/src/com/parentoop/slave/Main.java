@@ -13,7 +13,7 @@ public class Main {
         throw new AssertionError("Cannot instantiate object from " + this.getClass());
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         SlaveApplication.getInstance().initialize();
         SlaveApplication app = SlaveApplication.getInstance();
         SlaveStorage storage = app.getSlaveStorage();

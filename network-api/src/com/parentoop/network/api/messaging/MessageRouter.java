@@ -1,32 +1,33 @@
 package com.parentoop.network.api.messaging;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.net.InetAddress;
+import com.parentoop.network.api.Message;
+import com.parentoop.network.api.PeerCommunicator;
+
 import java.util.HashMap;
 import java.util.Map;
 
-public class MessageRouter implements MessageReader {
+public class MessageRouter implements MessageHandler {
 
-    private Map<MessageType, MessageHandler> mHub = new HashMap<>();
+    private Map<Integer, MessageHandler> mHub = new HashMap<>();
     private MessageHandler mDefaultHandler;
 
     @Override
-    public void read(MessageType type, ObjectInputStream inputStream, InetAddress senderAddress) throws IOException, ClassNotFoundException {
+    public void handle(Message message, PeerCommunicator sender) {
+        int type = message.getType();
         MessageHandler handler = mHub.get(type);
         if (handler == null) handler = mDefaultHandler;
         if (handler == null) {
             throw new MissingMessageHandlerException("There is no message handler registered to message type " + type);
         }
-        handler.handle(type, inputStream, senderAddress);
+        handler.handle(message, sender);
     }
 
-    public void register(MessageType type, MessageHandler handler) {
-        mHub.put(type, handler);
+    public void register(Integer messageType, MessageHandler handler) {
+        mHub.put(messageType, handler);
     }
 
-    public void unregister(MessageType type) {
-        mHub.remove(type);
+    public void unregister(Integer messageType) {
+        mHub.remove(messageType);
     }
 
     public void registerDefault(MessageHandler handler) {
@@ -36,5 +37,4 @@ public class MessageRouter implements MessageReader {
     public void unregisterDefault() {
         mDefaultHandler = null;
     }
-
 }
