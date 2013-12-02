@@ -10,6 +10,7 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Objects;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -69,8 +70,7 @@ public class NodeClientServerTest {
         waitForMessageReceive();
         assertNotNull(mReceivedMessage);
         assertNotSame(message, mReceivedMessage);
-        assertEquals(message.getType(), mReceivedMessage.getType());
-        assertEquals(message.getData(), mReceivedMessage.getData());
+        assertEquals(message, mReceivedMessage);
     }
 
     @Test
@@ -81,8 +81,7 @@ public class NodeClientServerTest {
         waitForMessageReceive();
         assertNotNull(mReceivedMessage);
         assertNotSame(message, mReceivedMessage);
-        assertEquals(message.getType(), mReceivedMessage.getType());
-        assertEquals(message.getData(), mReceivedMessage.getData());
+        assertEquals(message, mReceivedMessage);
     }
 
     @Test
@@ -92,8 +91,7 @@ public class NodeClientServerTest {
         waitForMessageReceive();
         assertNotNull(mReceivedMessage);
         assertNotSame(message, mReceivedMessage);
-        assertEquals(message.getType(), mReceivedMessage.getType());
-        assertEquals(message.getData(), mReceivedMessage.getData());
+        assertEquals(message, mReceivedMessage);
 
         mReceivedMessage = null;
         message = new Message(11);
@@ -101,8 +99,7 @@ public class NodeClientServerTest {
         waitForMessageReceive();
         assertNotNull(mReceivedMessage);
         assertNotSame(message, mReceivedMessage);
-        assertEquals(message.getType(), mReceivedMessage.getType());
-        assertEquals(message.getData(), mReceivedMessage.getData());
+        assertEquals(message, mReceivedMessage);
 
         mReceivedMessage = null;
         message = new Message(20, 45);
@@ -110,8 +107,7 @@ public class NodeClientServerTest {
         waitForMessageReceive();
         assertNotNull(mReceivedMessage);
         assertNotSame(message, mReceivedMessage);
-        assertEquals(message.getType(), mReceivedMessage.getType());
-        assertEquals(message.getData(), mReceivedMessage.getData());
+        assertEquals(message, mReceivedMessage);
     }
 
     @Test
@@ -130,6 +126,9 @@ public class NodeClientServerTest {
         assertEquals(10, mReceivedMessage.getType());
 
         Path receivedFile = mReceivedMessage.getData();
+        assertNotNull(receivedFile);
+        assertFalse(Objects.equals(fileToSend, receivedFile));
+
         Scanner in = new Scanner(Files.newInputStream(receivedFile));
         String read = in.nextLine();
         in.close();
