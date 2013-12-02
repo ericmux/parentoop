@@ -58,10 +58,12 @@ public class NodeServer {
 
     public void dispatchMessage(MessageType type, InetAddress peerAddress, Serializable message) throws IOException{
         Socket dispatchSocket;
-        if(!mDispatcherSockets.containsKey(peerAddress))
+        if (!mDispatcherSockets.containsKey(peerAddress)) {
             dispatchSocket = new Socket(peerAddress, DEFAULT_PORT);
-        else dispatchSocket = mDispatcherSockets.get(peerAddress);
-        mDispatcherSockets.put(dispatchSocket.getInetAddress(), dispatchSocket);
+            mDispatcherSockets.put(dispatchSocket.getInetAddress(), dispatchSocket);
+        } else {
+            dispatchSocket = mDispatcherSockets.get(peerAddress);
+        }
         OutputStream sos = dispatchSocket.getOutputStream();
 
         ObjectOutputStream oos = new ObjectOutputStream(sos);
@@ -72,7 +74,7 @@ public class NodeServer {
 
     public Collection<InetAddress> getConnectedPeers(){
         Collection<InetAddress> peers = new HashSet<>();
-        for(PeerHandler peerHandler : mPeerHandlers) peers.add(peerHandler.getSocket().getInetAddress());
+        for (PeerHandler peerHandler : mPeerHandlers) peers.add(peerHandler.getSocket().getInetAddress());
         return peers;
     }
 
@@ -86,7 +88,7 @@ public class NodeServer {
     }
 
     public void closeReading() throws IOException{
-        for(PeerHandler peer : mPeerHandlers) {
+        for (PeerHandler peer : mPeerHandlers) {
             peer.closeConnection();
         }
     }

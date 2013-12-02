@@ -2,11 +2,11 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/client/Client.iml" filepath="$PROJECT_DIR$/client/Client.iml" />
       <module fileurl="file://$PROJECT_DIR$/master/Master.iml" filepath="$PROJECT_DIR$/master/Master.iml" />
       <module fileurl="file://$PROJECT_DIR$/network-api/NetworkApi.iml" filepath="$PROJECT_DIR$/network-api/NetworkApi.iml" />
       <module fileurl="file://$PROJECT_DIR$/slave/Slave.iml" filepath="$PROJECT_DIR$/slave/Slave.iml" />
       <module fileurl="file://$PROJECT_DIR$/sql-lite-storage/SqlLiteStorage.iml" filepath="$PROJECT_DIR$/sql-lite-storage/SqlLiteStorage.iml" />
-      <module fileurl="file://$PROJECT_DIR$/client/client.iml" filepath="$PROJECT_DIR$/client/client.iml" />
     </modules>
   </component>
 </project>
