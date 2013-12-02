@@ -5,14 +5,14 @@ import com.parentoop.core.api.InputReader;
 import com.parentoop.core.api.Mapper;
 import com.parentoop.core.api.Reducer;
 import com.parentoop.network.api.NodeServer;
-import com.parentoop.network.api.messaging.MessageReader;
+import com.parentoop.network.api.messaging.MessageHandler;
 
 import java.io.IOException;
 
 public class MasterNode {
 
     private NodeServer mMasterServer;
-    private MessageReader mMasterReader;
+    private MessageHandler mMasterReader;
     private InputReader mInputReader;
     private Mapper mMapper;
     private Reducer mReducer;
@@ -23,11 +23,9 @@ public class MasterNode {
     }
 
     public MasterNode(int port) throws IOException{
-        mMasterServer = new NodeServer(port, mMasterReader, NodeServer.DEFAULT_BACKLOG);
     }
 
     public MasterNode() throws IOException{
-        mMasterServer = new NodeServer(NodeServer.DEFAULT_PORT, mMasterReader, NodeServer.DEFAULT_BACKLOG);
     }
 
 }
