@@ -1,10 +1,11 @@
-import com.parentoop.network.api.MessageReader;
-import com.parentoop.network.api.MessageType;
+import com.parentoop.network.api.messaging.MessageReader;
+import com.parentoop.network.api.messaging.MessageType;
 import com.parentoop.network.api.NodeServer;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.net.InetAddress;
 
 import static org.junit.Assert.assertEquals;
 
@@ -17,7 +18,7 @@ public class MessageReaderTest {
 
         MessageReader reader = new MessageReader() {
             @Override
-            public void read(MessageType type, ObjectInputStream inputStream) throws IOException, ClassNotFoundException{
+            public void read(MessageType type, ObjectInputStream inputStream, InetAddress senderAddress) throws IOException, ClassNotFoundException{
                 assertEquals(inputStream.readObject(), sent);
             }
         };

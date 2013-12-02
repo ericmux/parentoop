@@ -1,57 +1,76 @@
 package com.parentoop.slave.application;
 
+import com.parentoop.client.ui.Mapper;
+import com.parentoop.client.ui.Reducer;
+import com.parentoop.network.api.NodeServer;
+import com.parentoop.network.api.messaging.MessageType;
+import com.parentoop.slave.listeners.master.MasterRouter;
+import com.parentoop.slave.listeners.slave.SlaveRouter;
+import com.parentoop.slave.utils.ServiceUtils;
 import com.parentoop.storage.api.SlaveStorage;
 
-import java.io.PrintStream;
-import java.util.Iterator;
-import java.util.ServiceLoader;
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.InetAddress;
 
 public class SlaveApplication implements Initializable, Finalizable {
 
+    private static final int SLAVE_LISTENS_MASTER_PORT = 13371;
+    private static final int SLAVE_LISTENS_SLAVE_PORT = 13372;
+
     public static class ServiceNotAvailableException extends IllegalStateException { /* No-op */ }
 
-    private static class InstanceHolder {
-        private static final SlaveApplication INSTANCE = new SlaveApplication();
-    }
+    private static SlaveApplication sInstance;
 
-    public static SlaveApplication getInstance() {
-        return InstanceHolder.INSTANCE;
+    public static SlaveApplication getInstance() throws IOException {
+        if (sInstance == null) {
+            sInstance = new SlaveApplication();
+        }
+        return sInstance;
     }
 
     private final SlaveStorage mSlaveStorage;
-    private final PrintStream mOut = System.out;
-    private final PrintStream mErr = System.err;
+    private final NodeServer mSlaveListener;
+    private final NodeServer mMasterListener;
+    private Mapper mMapper;
+    private Reducer mReducer;
 
-    private SlaveApplication() {
-        mSlaveStorage = load(SlaveStorage.class);
+    private SlaveApplication() throws IOException {
+        mSlaveStorage = ServiceUtils.load(SlaveStorage.class);
+        mMasterListener = new NodeServer(SLAVE_LISTENS_MASTER_PORT, new MasterRouter());
+        mSlaveListener = new NodeServer(SLAVE_LISTENS_SLAVE_PORT, new SlaveRouter());
     }
 
-    public void initialize() {
-        try {
-            mSlaveStorage.initialize();
-        } catch (Exception e) {
-            mOut.println("Error during slave initialization.");
-            e.printStackTrace(mErr);
+    @Override
+    public void initialize() throws Exception {
+        mSlaveStorage.initialize();
+        mMasterListener.startServer();
+        mSlaveListener.startServer();
+    }
+
+    @Override
+    public void terminate() throws Exception {
+        mSlaveListener.shutDownServer();
+        mMasterListener.shutDownServer();
+        mSlaveStorage.terminate();
+    }
+
+    public void sendKeyValues(String key, InetAddress senderAddress) throws IOException {
+        for (Object value : mSlaveStorage.read(key)) {
+            mMasterListener.dispatchMessage(MessageType.DATA_VALUE, senderAddress, (Serializable) value);
         }
-    }
-
-    public void terminate() {
-        try {
-            mSlaveStorage.terminate();
-        } catch (Exception e) {
-            mOut.println("Error during slave termination.");
-            e.printStackTrace(mErr);
-        }
-    }
-
-    private <T> T load(Class<T> service) {
-        Iterator<T> i = ServiceLoader.load(service).iterator();
-        if (!i.hasNext()) throw new ServiceNotAvailableException();
-        return i.next();
+        mMasterListener.dispatchMessage(MessageType.END_OF_VALUE_STREAM, senderAddress, null);
     }
 
     public SlaveStorage getSlaveStorage() {
         return mSlaveStorage;
     }
 
+    public void setMapper(Mapper mapper) {
+        mMapper = mapper;
+    }
+
+    public void setReducer(Reducer reducer) {
+        mReducer = reducer;
+    }
 }

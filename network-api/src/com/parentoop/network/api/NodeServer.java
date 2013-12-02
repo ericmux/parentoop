@@ -1,5 +1,8 @@
 package com.parentoop.network.api;
 
+import com.parentoop.network.api.messaging.MessageReader;
+import com.parentoop.network.api.messaging.MessageType;
+
 import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -121,7 +124,7 @@ public class NodeServer {
                         try {
                             int code = mInputStream.readInt();
                             MessageType type = MessageType.fromId(code);
-                            mMessageReader.read(type, mInputStream);
+                            mMessageReader.read(type, mInputStream, mSocket.getInetAddress());
                             mInputStream.close();
                         } catch (Exception e) {
                             e.printStackTrace();

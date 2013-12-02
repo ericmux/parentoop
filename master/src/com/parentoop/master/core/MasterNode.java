@@ -4,8 +4,8 @@ package com.parentoop.master.core;
 import com.parentoop.core.api.InputReader;
 import com.parentoop.core.api.Mapper;
 import com.parentoop.core.api.Reducer;
-import com.parentoop.network.api.MessageReader;
 import com.parentoop.network.api.NodeServer;
+import com.parentoop.network.api.messaging.MessageReader;
 
 import java.io.IOException;
 
