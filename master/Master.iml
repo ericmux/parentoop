@@ -9,6 +9,7 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="NetworkApi" />
     <orderEntry type="module" module-name="client" />
+    <orderEntry type="library" name="guava-15.0" level="project" />
   </component>
 </module>
 
