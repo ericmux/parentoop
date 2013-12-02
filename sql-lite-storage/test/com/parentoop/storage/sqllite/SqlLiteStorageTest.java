@@ -14,6 +14,8 @@ import static org.junit.Assert.*;
 
 public class SqlLiteStorageTest {
 
+    private static final String KEY = "key";
+
     private SqlLiteStorage mStorage;
 
     @Before
@@ -51,22 +53,22 @@ public class SqlLiteStorageTest {
 
     @Test
     public void testWipeDataAfterTerminating() throws Exception {
-        assertFalse(mStorage.read("key").iterator().hasNext());
-        mStorage.insert("key", 10);
-        assertTrue(mStorage.read("key").iterator().hasNext());
+        assertFalse(mStorage.read(KEY).iterator().hasNext());
+        mStorage.insert(KEY, 10);
+        assertTrue(mStorage.read(KEY).iterator().hasNext());
         mStorage.terminate();
         mStorage.initialize();
-        assertFalse(mStorage.read("key").iterator().hasNext());
+        assertFalse(mStorage.read(KEY).iterator().hasNext());
     }
 
     @Test
     public void testReadMultipleValues() throws Exception {
         Collection<? extends Serializable> values = Arrays.asList("a", 2, 0.5, true);
         for (Serializable value : values) {
-            mStorage.insert("key", value);
+            mStorage.insert(KEY, value);
         }
         int i = 0;
-        for (Object value : mStorage.read("key")) {
+        for (Object value : mStorage.read(KEY)) {
             assertTrue(values.contains(value));
             i++;
         }
