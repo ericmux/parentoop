@@ -18,7 +18,7 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="sqlite-jdbc-3.7.2" level="project" />
+    <orderEntry type="library" exported="" name="sqlite-jdbc-3.7.2" level="project" />
   </component>
 </module>
 

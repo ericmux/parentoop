@@ -30,5 +30,22 @@ public class MessageReaderTest {
         dispatchingNode.dispatchMessage(MessageType.NOP, listeningNode.getServerAddress(), sent);
     }
 
+    @Test
+    public void testNullMessage() throws IOException{
+        MessageReader reader = new MessageReader() {
+            @Override
+            public void read(MessageType type, ObjectInputStream inputStream) throws IOException, ClassNotFoundException{
+                assertEquals(inputStream.readObject(), null);
+            }
+        };
+
+        NodeServer listeningNode = new NodeServer(NodeServer.DEFAULT_PORT - 2, reader);
+        NodeServer dispatchingNode = new NodeServer(NodeServer.DEFAULT_PORT - 3, reader);
+
+        listeningNode.startServer();
+
+        dispatchingNode.dispatchMessage(MessageType.NOP, listeningNode.getServerAddress(), null);
+    }
+
 
 }

@@ -1,15 +1,14 @@
-package com.parentoop.client.job;
+package com.parentoop.core.loader;
 
-import com.parentoop.client.ui.InputReader;
-import com.parentoop.client.ui.Mapper;
-import com.parentoop.client.ui.Reducer;
+import com.parentoop.core.api.InputReader;
+import com.parentoop.core.api.Mapper;
+import com.parentoop.core.api.Reducer;
 
 import java.io.Serializable;
 
-public class TaskConfig implements Serializable {
+public class TaskConfig implements Serializable{
 
     private String mTaskName;
-
     private String mMapperClass;
     private String mReducerClass;
     private String mInputReaderClass;
@@ -45,4 +44,6 @@ public class TaskConfig implements Serializable {
     public void setInputReaderClass(Class<? extends InputReader> inputReaderClass) {
         mInputReaderClass = inputReaderClass.getName();
     }
+
+
 }
