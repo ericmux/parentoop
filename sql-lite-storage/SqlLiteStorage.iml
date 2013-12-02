@@ -12,25 +12,13 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="file://$MODULE_DIR$/../libs/sqlite-jdbc-3.7.2" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES>
-          <root url="file://$MODULE_DIR$/../libs/sqlite-jdbc-3.7.2" />
-        </SOURCES>
-        <jarDirectory url="file://$MODULE_DIR$/../libs/sqlite-jdbc-3.7.2" recursive="false" />
-        <jarDirectory url="file://$MODULE_DIR$/../libs/sqlite-jdbc-3.7.2" recursive="false" type="SOURCES" />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
           <root url="jar://$APPLICATION_HOME_DIR$/lib/junit-4.10.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="sqlite-jdbc-3.7.2" level="project" />
   </component>
 </module>
 
