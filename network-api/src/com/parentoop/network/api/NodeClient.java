@@ -24,11 +24,19 @@ public class NodeClient extends PeerCommunicator {
     }
 
     @Override
-    void handleMessage(Message message) {
+    protected void handleMessage(Message message) {
         mMessageHandler.handle(message, this);
     }
 
     public void shutdown() throws IOException {
         super.shutdown();
+    }
+
+    public boolean isConnected() {
+        return mSocket.isConnected() && !mSocket.isClosed();
+    }
+
+    public boolean isShutdown() {
+        return mSocket.isClosed();
     }
 }

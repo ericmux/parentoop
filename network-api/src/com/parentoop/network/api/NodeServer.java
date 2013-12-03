@@ -1,6 +1,7 @@
 package com.parentoop.network.api;
 
 import com.parentoop.network.api.messaging.MessageHandler;
+import sun.plugin.dom.exception.InvalidStateException;
 
 import java.io.*;
 import java.net.*;
@@ -20,7 +21,7 @@ public class NodeServer {
 
     private ServerSocket mServerSocket;
     private MessageHandler mMessageHandler;
-    private final ScheduledExecutorService mExecutorService = Executors.newScheduledThreadPool(THREAD_POOL_SIZE);
+    private ScheduledExecutorService mExecutorService;
 
     private HashMap<InetAddress, PeerHandler> mPeerHandlers = new HashMap<>();
 
@@ -35,26 +36,11 @@ public class NodeServer {
     }
 
     public void startServer() throws IOException {
-        if (mServerSocket != null) throw new RuntimeException("Server already started");
+        if (mServerSocket != null) throw new IllegalStateException("Server already started");
 
         mServerSocket = new ServerSocket(mConnectionPort, mBacklog);
-        Runnable listeningTask = new Runnable() {
-            @Override
-            public void run() {
-                while (!mServerSocket.isClosed()) {
-                    try {
-                        Socket socket = mServerSocket.accept();
-                        PeerHandler peerHandler = new PeerHandler(socket);
-                        mPeerHandlers.put(socket.getInetAddress(), peerHandler);
-                    } catch (IOException e) {
-                        if (!(e instanceof SocketException && e.getMessage().contains("socket closed"))) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
-        };
-        mExecutorService.submit(listeningTask);
+        mExecutorService = Executors.newScheduledThreadPool(THREAD_POOL_SIZE);
+        mExecutorService.submit(new ListeningRunnable());
     }
 
     public void broadcastMessage(Message message) throws IOException {
@@ -68,11 +54,53 @@ public class NodeServer {
     }
 
     public void shutdown() throws IOException {
+        if (mServerSocket == null) throw new IllegalStateException("Attempting shutdown on non started server");
+
         for (PeerHandler peerHandler : mPeerHandlers.values()) {
             peerHandler.shutdown();
         }
         mExecutorService.shutdown();
         mServerSocket.close();
+    }
+
+    public boolean isStarted() {
+        return mServerSocket != null;
+    }
+
+    public boolean isRunning() {
+        return isStarted() && !mServerSocket.isClosed();
+    }
+
+    public boolean isShutdown() {
+        return isStarted() && mServerSocket.isClosed();
+    }
+
+    private class ListeningRunnable implements Runnable {
+
+        @Override
+        public void run() {
+            while (!mServerSocket.isClosed()) {
+                try {
+                    Socket socket = mServerSocket.accept();
+                    PeerHandler peerHandler = new PeerHandler(socket);
+                    mPeerHandlers.put(socket.getInetAddress(), peerHandler);
+                } catch (SocketException ex) {
+                    String excMessage = ex.getMessage();
+                    if (excMessage == null) excMessage = "";
+                    if (mServerSocket.isClosed() || excMessage.contains("closed")) {
+                        try {
+                            shutdown();
+                        } catch (IOException e) {
+                            // we are shutting down anyway, eat
+                        }
+                    } else {
+                        ex.printStackTrace();
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
     }
 
     /**
@@ -93,7 +121,7 @@ public class NodeServer {
         }
 
         @Override
-        void handleMessage(Message message) {
+        protected void handleMessage(Message message) {
             mMessageHandler.handle(message, this);
         }
     }

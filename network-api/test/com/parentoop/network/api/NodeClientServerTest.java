@@ -53,13 +53,43 @@ public class NodeClientServerTest {
     }
 
     @Test
-    public void testClientConnection() throws IOException, InterruptedException {
+    public void testClientShutdown() throws IOException, InterruptedException {
         assertEquals(1, mNodeServer.getConnectedPeers().size());
+        assertTrue(mNodeClient.isConnected());
+        assertFalse(mNodeClient.isShutdown());
 
         mNodeClient.shutdown();
-        mNodeClient = null;
         Thread.sleep(FAKE_NETWORK_THRESHOLD);
+
         assertEquals(0, mNodeServer.getConnectedPeers().size());
+        assertTrue(mNodeServer.isStarted());
+        assertTrue(mNodeServer.isRunning());
+        assertFalse(mNodeServer.isShutdown());
+
+        assertFalse(mNodeClient.isConnected());
+        assertTrue(mNodeClient.isShutdown());
+
+        mNodeClient = null;
+    }
+
+    @Test
+    public void testServerShutdown() throws IOException, InterruptedException {
+        assertTrue(mNodeServer.isStarted());
+        assertTrue(mNodeServer.isRunning());
+        assertFalse(mNodeServer.isShutdown());
+
+        mNodeServer.shutdown();
+        Thread.sleep(FAKE_NETWORK_THRESHOLD);
+
+        assertTrue(mNodeServer.isStarted());
+        assertFalse(mNodeServer.isRunning());
+        assertTrue(mNodeServer.isShutdown());
+
+        assertFalse(mNodeClient.isConnected());
+        assertTrue(mNodeClient.isShutdown());
+
+        mNodeClient = null;
+        mNodeServer = null;
     }
 
     @Test

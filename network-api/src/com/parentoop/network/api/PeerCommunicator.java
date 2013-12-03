@@ -14,7 +14,7 @@ public abstract class PeerCommunicator {
     public static final byte FILE_HEADER = 4;
     public static final byte DISCONNECT_HEADER = 127;
 
-    private Socket mSocket;
+    protected Socket mSocket;
     private ObjectInputStream mInputStream;
     private ObjectOutputStream mOutputStream;
 
@@ -27,28 +27,6 @@ public abstract class PeerCommunicator {
         mInputStream = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
 
         mReadTaskFuture = executorService.scheduleWithFixedDelay(new ReadRunnable(), 0, 100, TimeUnit.NANOSECONDS);
-    }
-
-    private void readMessage() throws IOException, ClassNotFoundException {
-        byte header = mInputStream.readByte();
-        Message message;
-        switch (header) {
-            case MESSAGE_HEADER:
-                message = new Message(mInputStream.readInt(), mInputStream.readObject());
-                handleMessage(message);
-                break;
-            case FILE_HEADER:
-                int messageType = mInputStream.readInt();
-                Path fileRead = Files.createTempFile("parentoop", ".tempfile");
-                fileRead.toFile().deleteOnExit();
-                FileTransferHelper.receiveFile(fileRead, mInputStream);
-                message = new Message(messageType, fileRead);
-                handleMessage(message);
-                break;
-            case DISCONNECT_HEADER:
-                shutdown();
-                break;
-        }
     }
 
     public void dispatchMessage(Message message) throws IOException {
@@ -78,7 +56,29 @@ public abstract class PeerCommunicator {
         }
     }
 
-    abstract void handleMessage(Message message);
+    private void readMessage() throws IOException, ClassNotFoundException {
+        byte header = mInputStream.readByte();
+        Message message;
+        switch (header) {
+            case MESSAGE_HEADER:
+                message = new Message(mInputStream.readInt(), mInputStream.readObject());
+                handleMessage(message);
+                break;
+            case FILE_HEADER:
+                int messageType = mInputStream.readInt();
+                Path fileRead = Files.createTempFile("parentoop", ".tempfile");
+                fileRead.toFile().deleteOnExit();
+                FileTransferHelper.receiveFile(fileRead, mInputStream);
+                message = new Message(messageType, fileRead);
+                handleMessage(message);
+                break;
+            case DISCONNECT_HEADER:
+                shutdown();
+                break;
+        }
+    }
+
+    protected abstract void handleMessage(Message message);
 
     private class ReadRunnable implements Runnable {
 
@@ -95,6 +95,14 @@ public abstract class PeerCommunicator {
                 } catch (EOFException ex) {
                     // end of stream, shutdown
                     shutdown();
+                } catch (IOException ex) {
+                    String excMessage = ex.getMessage();
+                    if (excMessage == null) excMessage = "";
+                    if (mSocket.isClosed() || excMessage.contains("closed")) {
+                        shutdown();
+                    } else {
+                        throw ex;
+                    }
                 }
             } catch (IOException | ClassNotFoundException ex) {
                 ex.printStackTrace();
