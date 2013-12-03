@@ -10,27 +10,23 @@ public class JarLoader {
 
     private URLClassLoader mClassLoader;
 
-    public JarLoader(String pathToJar){
-        Path path = Paths.get(pathToJar);
-        URL u = null;
+    public JarLoader(String jarPath){
+        Path path = Paths.get(jarPath);
+        URL url = null;
         try {
-            u = path.toUri().toURL();
+            url = path.toUri().toURL();
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
-        mClassLoader = new URLClassLoader(new URL[]{u});
+        mClassLoader = new URLClassLoader(new URL[] { url });
     }
 
     public Class<?> loadClass(String className){
-
-        Class clzz = null;
         try {
-            clzz = Class.forName(className, true, mClassLoader);
+            return Class.forName(className, true, mClassLoader);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
-
-        return clzz;
-
+        return null;
     }
 }

@@ -1,7 +1,7 @@
 package com.parentoop.slave.application;
 
-import com.parentoop.client.ui.Mapper;
-import com.parentoop.client.ui.Reducer;
+import com.parentoop.core.api.Mapper;
+import com.parentoop.core.api.Reducer;
 import com.parentoop.network.api.Message;
 import com.parentoop.network.api.NodeServer;
 import com.parentoop.network.api.PeerCommunicator;

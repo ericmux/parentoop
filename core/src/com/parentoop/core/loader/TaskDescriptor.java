@@ -6,7 +6,7 @@ import com.parentoop.core.api.Reducer;
 
 import java.io.Serializable;
 
-public class TaskConfig implements Serializable{
+public class TaskDescriptor implements Serializable{
 
     private String mTaskName;
     private String mMapperClass;
