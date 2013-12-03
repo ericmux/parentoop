@@ -1,11 +1,13 @@
 package com.parentoop.slave.listeners.master;
 
+import com.parentoop.core.messaging.MessageType;
 import com.parentoop.network.api.messaging.MessageRouter;
 
 public class MasterRouter extends MessageRouter {
 
     public MasterRouter() {
-        // TODO: Use common message type from Core module
-        register(-1, new MapChunk());
+        register(MessageType.MAP_CHUNK, new MapChunk());
+        register(MessageType.LOAD_JAR, new JarLoader());
+        register(MessageType.LOAD_DESCRIPTOR, new DescriptorLoader());
     }
 }

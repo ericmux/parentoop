@@ -1,7 +1,5 @@
 package com.parentoop.slave.utils;
 
-import com.parentoop.slave.application.SlaveApplication;
-
 import java.util.Iterator;
 import java.util.ServiceLoader;
 
@@ -14,7 +12,7 @@ public class ServiceUtils {
 
     public static <T> T load(Class<T> service) {
         Iterator<T> i = ServiceLoader.load(service).iterator();
-        if (!i.hasNext()) throw new SlaveApplication.ServiceNotAvailableException();
+        if (!i.hasNext()) throw new ServiceNotAvailableException();
         return i.next();
     }
 

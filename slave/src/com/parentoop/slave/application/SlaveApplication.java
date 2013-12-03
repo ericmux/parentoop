@@ -2,9 +2,7 @@ package com.parentoop.slave.application;
 
 import com.parentoop.core.api.Mapper;
 import com.parentoop.core.api.Reducer;
-import com.parentoop.network.api.Message;
 import com.parentoop.network.api.NodeServer;
-import com.parentoop.network.api.PeerCommunicator;
 import com.parentoop.slave.listeners.master.MasterRouter;
 import com.parentoop.slave.listeners.slave.SlaveRouter;
 import com.parentoop.slave.utils.ServiceUtils;
@@ -16,8 +14,6 @@ public class SlaveApplication implements Initializable, Finalizable {
 
     private static final int SLAVE_LISTENS_MASTER_PORT = 13371;
     private static final int SLAVE_LISTENS_SLAVE_PORT = 13372;
-
-    public static class ServiceNotAvailableException extends IllegalStateException { /* No-op */ }
 
     private static SlaveApplication sInstance;
 
@@ -54,23 +50,5 @@ public class SlaveApplication implements Initializable, Finalizable {
         mSlaveStorage.terminate();
     }
 
-    public void sendKeyValues(String key, PeerCommunicator sender) throws IOException {
-        // TODO: Use common message types from Core module
-        for (Object value : mSlaveStorage.read(key)) {
-            sender.dispatchMessage(new Message(-1, value));
-        }
-        sender.dispatchMessage(new Message(-1));
-    }
 
-    public SlaveStorage getSlaveStorage() {
-        return mSlaveStorage;
-    }
-
-    public void setMapper(Mapper mapper) {
-        mMapper = mapper;
-    }
-
-    public void setReducer(Reducer reducer) {
-        mReducer = reducer;
-    }
 }
