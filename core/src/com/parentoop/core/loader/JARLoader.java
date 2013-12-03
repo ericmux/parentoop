@@ -1,18 +1,18 @@
 package com.parentoop.core.loader;
 
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Path;
 
 public class JarLoader {
 
     private URLClassLoader mClassLoader;
 
-    public JarLoader(File jarFile){
+    public JarLoader(Path jarFile){
         URL url = null;
         try {
-            url = jarFile.toPath().toUri().toURL();
+            url = jarFile.toUri().toURL();
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }

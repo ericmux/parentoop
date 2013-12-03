@@ -4,26 +4,28 @@ import com.parentoop.core.api.InputReader;
 import com.parentoop.core.api.Mapper;
 import com.parentoop.core.api.Reducer;
 
-import java.io.File;
+import java.nio.file.Path;
 
 public class Task {
 
     private JarLoader mJarLoader;
+    private TaskDescriptor mDescriptor;
+
     private Mapper mMapper;
     private Reducer mReducer;
     private InputReader mInputReader;
-    private TaskDescriptor mDescriptor;
 
-    public static Task configure(File jarFile, String taskConfiguratorClassName) throws IllegalAccessException,
+    public static Task configure(Path jarFile, String taskConfiguratorClassName) throws IllegalAccessException,
             InstantiationException {
         JarLoader jarLoader = new JarLoader(jarFile);
-        TaskConfigurator configurator = (TaskConfigurator) jarLoader.loadClass(taskConfiguratorClassName).newInstance();
         TaskDescriptor descriptor = new TaskDescriptor();
+        Class<?> configuratorClass = jarLoader.loadClass(taskConfiguratorClassName);
+        TaskConfigurator configurator = (TaskConfigurator) configuratorClass.newInstance();
         configurator.configure(descriptor);
         return new Task(jarLoader, descriptor);
     }
 
-    public static Task load(File jarFile, TaskDescriptor descriptor) {
+    public static Task load(Path jarFile, TaskDescriptor descriptor) {
         JarLoader jarLoader = new JarLoader(jarFile);
         return new Task(jarLoader, descriptor);
     }
