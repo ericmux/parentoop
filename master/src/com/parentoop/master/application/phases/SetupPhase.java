@@ -1,11 +1,11 @@
-package com.parentoop.master.core.application.phases;
+package com.parentoop.master.application.phases;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.*;
 import com.parentoop.core.loader.TaskDescriptor;
 import com.parentoop.core.networking.Messages;
-import com.parentoop.master.core.execution.ExecutionPhase;
+import com.parentoop.master.execution.ExecutionPhase;
 import com.parentoop.network.api.Message;
 import com.parentoop.network.api.PeerCommunicator;
 

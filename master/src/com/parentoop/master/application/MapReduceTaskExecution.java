@@ -1,10 +1,10 @@
-package com.parentoop.master.core.application;
+package com.parentoop.master.application;
 
 import com.google.common.collect.Lists;
 import com.parentoop.core.loader.Task;
-import com.parentoop.master.core.application.phases.MappingPhase;
-import com.parentoop.master.core.application.phases.SetupPhase;
-import com.parentoop.master.core.execution.TaskExecution;
+import com.parentoop.master.application.phases.MappingPhase;
+import com.parentoop.master.application.phases.SetupPhase;
+import com.parentoop.master.execution.TaskExecution;
 
 import java.nio.file.Path;
 

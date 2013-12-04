@@ -1,9 +1,9 @@
-package com.parentoop.master.core.application;
+package com.parentoop.master.application;
 
 import com.parentoop.core.loader.Task;
 import com.parentoop.core.networking.Messages;
 import com.parentoop.core.networking.Ports;
-import com.parentoop.master.core.execution.TaskExecution;
+import com.parentoop.master.execution.TaskExecution;
 import com.parentoop.network.api.Message;
 import com.parentoop.network.api.NodeServer;
 import com.parentoop.network.api.PeerCommunicator;
