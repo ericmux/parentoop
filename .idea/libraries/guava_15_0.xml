@@ -4,7 +4,7 @@
       <root url="jar://$PROJECT_DIR$/libs/guava-15.0/guava-15.0.jar!/" />
     </CLASSES>
     <JAVADOC>
-      <root url="http://docs.guava-libraries.googlecode.com/git-history/release/javadoc/index.html" />
+      <root url="http://docs.guava-libraries.googlecode.com\git-history\release\javadoc" />
     </JAVADOC>
     <SOURCES />
   </library>
