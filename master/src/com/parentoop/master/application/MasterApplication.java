@@ -57,17 +57,31 @@ public class MasterApplication implements TaskExecution.TaskExecutionListener<Pa
 
     @Override
     public void onEnterExecutionPhase(int code) {
-
+        try {
+            mMasterClientServer.broadcastMessage(new Message(code));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void onExecutionFailed(Throwable throwable) {
-
+        try {
+            mTaskExecution = null;
+            mMasterClientServer.broadcastMessage(new Message(Messages.FAILURE, throwable));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void onExecutionSuccessful(Path result) {
-
+        try {
+            mTaskExecution = null;
+            mMasterClientServer.broadcastMessage(new Message(Messages.SEND_RESULT, result));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private class ClientMessageHandler implements MessageHandler {
