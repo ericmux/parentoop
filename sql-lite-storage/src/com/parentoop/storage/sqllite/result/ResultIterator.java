@@ -7,11 +7,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class ResultIterator implements Iterator<Object> {
+public class ResultIterator<T> implements Iterator<T> {
 
     private final ResultSet mResultSet;
     private boolean mHasNext;
-    private Object mNext;
+    private T mNext;
 
     public ResultIterator(ResultSet resultSet) {
         mResultSet = resultSet;
@@ -42,9 +42,9 @@ public class ResultIterator implements Iterator<Object> {
     }
 
     @Override
-    public Object next() {
+    public T next() {
         if (!mHasNext) throw new IllegalAccessError();
-        Object next = mNext;
+        T next = mNext;
         move();
         return next;
     }

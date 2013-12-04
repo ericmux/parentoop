@@ -1,6 +1,6 @@
 package com.parentoop.storage.sqllite;
 
-import com.parentoop.storage.api.SlaveStorage;
+import com.parentoop.slave.api.SlaveStorage;
 import com.parentoop.storage.sqllite.result.ResultIterable;
 import com.parentoop.storage.sqllite.result.ResultIterator;
 import com.parentoop.storage.utils.SerializableConverter;
@@ -12,7 +12,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class SqlLiteStorage implements SlaveStorage {
+public class SqlLiteStorage<T extends Serializable> implements SlaveStorage<T> {
 
     private final static String DRIVER_CLASS = org.sqlite.JDBC.class.getName();
     private final static String SERVER_ADDRESS = "jdbc:sqlite:slave.db";
@@ -64,12 +64,18 @@ public class SqlLiteStorage implements SlaveStorage {
     }
 
     @Override
-    public void terminate() throws Exception {
-        if (mConnection == null) return;
-        mQueryHelper.closeAll();
-        dropSchema();
-        mConnection.close();
-        mConnection = null;
+    public void terminate()  {
+        try {
+            if (mConnection == null) return;
+            mQueryHelper.closeAll();
+            dropSchema();
+            mConnection.close();
+            mConnection = null;
+        } catch (SQLException e) {
+            AssertionError error = new AssertionError();
+            error.initCause(e);
+            throw error;
+        }
         // TODO: Clean up .db file
     }
 
@@ -97,7 +103,7 @@ public class SqlLiteStorage implements SlaveStorage {
     private static final String INSERT_VALUE_QUERY = "INSERT INTO data (`key_id`, `value`) VALUES (?, ?)";
 
     @Override
-    public void insert(String key, Serializable value) {
+    public void insert(String key, T value) {
         try {
             int id = selectOrCreateKeyId(key);
             byte[] bytes = SerializableConverter.toByteArray(value);
@@ -117,10 +123,10 @@ public class SqlLiteStorage implements SlaveStorage {
             "    WHERE keys.`key` = ?";
 
     @Override
-    public Iterable<Object> read(String key) {
+    public Iterable<T> read(String key) {
         try {
             ResultSet result = mQueryHelper.get(SELECT_DATA_BY_KEY_QUERY, key);
-            return new ResultIterable(new ResultIterator(result));
+            return new ResultIterable<>(new ResultIterator<T>(result));
         } catch (SQLException | IOException e) {
             try { terminate(); } catch (Exception exc) { /* No-op */ }
             AssertionError error = new AssertionError();
