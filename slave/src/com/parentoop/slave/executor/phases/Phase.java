@@ -1,11 +1,13 @@
 package com.parentoop.slave.executor.phases;
 
+import com.parentoop.core.networking.Messages;
 import com.parentoop.core.networking.Ports;
 import com.parentoop.network.api.Message;
 import com.parentoop.network.api.NodeClient;
 import com.parentoop.network.api.PeerCommunicator;
 import com.parentoop.slave.executor.PhaseExecutor;
 import com.parentoop.slave.executor.TaskParameters;
+import com.parentoop.slave.view.Console;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -18,6 +20,10 @@ public abstract class Phase {
     private Map<InetAddress, NodeClient> mPeers = new HashMap<>();
     protected PhaseExecutor mExecutor;
     protected NodeClient mMasterConnection;
+
+    protected Phase() {
+        mNextPhaseClass = getClass();
+    }
 
     public void initialize(TaskParameters parameters) {
         mMasterConnection = parameters.getMasterConnection();
@@ -73,6 +79,15 @@ public abstract class Phase {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    public void dispatchIdleMessage() {
+        Console.println("Dispatching IDLE to Master");
+        try {
+            mMasterConnection.dispatchMessage(new Message(Messages.IDLE));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

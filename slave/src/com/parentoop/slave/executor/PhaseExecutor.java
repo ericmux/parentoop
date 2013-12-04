@@ -1,6 +1,5 @@
 package com.parentoop.slave.executor;
 
-import com.parentoop.core.networking.Messages;
 import com.parentoop.core.networking.Ports;
 import com.parentoop.network.api.Message;
 import com.parentoop.network.api.NodeClient;
@@ -37,27 +36,19 @@ public class PhaseExecutor implements MessageHandler {
         mTaskParameters.setSlaveConnection(slaveConnection);
         mPhase = new LoadPhase();
         mPhase.initialize(mTaskParameters);
-        dispatchIdleMessage();
     }
 
     @Override
     public void handle(Message message, PeerCommunicator sender) {
         Console.println("Incomming message: " + message.getCode());
+        Console.println("In phase: " + mPhase.getClass().getSimpleName());
         mPhase.execute(message, sender);
         Phase phase = mPhase.nextPhase();
         if (!phase.equals(mPhase)) {
             mPhase.terminate(mTaskParameters);
             mPhase = phase;
             mPhase.initialize(mTaskParameters);
-        }
-        dispatchIdleMessage();
-    }
-
-    public void dispatchIdleMessage() {
-        try {
-            mMasterConnection.dispatchMessage(new Message(Messages.IDLE));
-        } catch (IOException e) {
-            e.printStackTrace();
+            Console.println("Next phase: " + phase.getClass().getSimpleName());
         }
     }
 }

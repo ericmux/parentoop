@@ -42,10 +42,12 @@ public class MapPhase extends Phase {
                 if (mDataPersistorThread == null) startDataPersistor();
                 Runnable task = new MapTask(message.<Serializable>getData());
                 mMappersThreadPool.submit(task);
+                dispatchIdleMessage();
                 break;
             case Messages.END_MAP:
                 endMap();
                 nextPhase(ReducePhase.class);
+                dispatchIdleMessage();
                 break;
         }
     }

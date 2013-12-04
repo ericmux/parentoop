@@ -71,6 +71,7 @@ public class ReducePhase extends Phase {
                 if (mTotalRequests == 0) {
                     dispatchMessageToMaster(new Message(Messages.END_OF_RESULT_STREAM));
                     nextPhase(LoadPhase.class);
+                    dispatchIdleMessage();
                 }
         }
     }
