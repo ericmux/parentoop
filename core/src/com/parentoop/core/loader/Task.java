@@ -8,7 +8,6 @@ import java.nio.file.Path;
 
 public class Task {
 
-    private Path mInputFile;
     private Path mJarFile;
     private JarLoader mJarLoader;
     private TaskDescriptor mDescriptor;
@@ -17,7 +16,7 @@ public class Task {
     private Reducer mReducer;
     private InputReader mInputReader;
 
-    public static Task load(Path inputFile, Path jarFile, String taskConfiguratorClassName) {
+    public static Task load(Path jarFile, String taskConfiguratorClassName) {
         JarLoader jarLoader = new JarLoader(jarFile);
 
         TaskConfigurator configurator = null;
@@ -33,19 +32,18 @@ public class Task {
         TaskDescriptor descriptor = new TaskDescriptor();
         configurator.configure(descriptor);
 
-        return new Task(inputFile, jarFile, descriptor, jarLoader);
+        return new Task(jarFile, descriptor, jarLoader);
     }
 
-    public static Task load(Path inputFile, Path jarFile, TaskDescriptor descriptor) {
-        return new Task(inputFile, jarFile, descriptor);
+    public static Task load(Path jarFile, TaskDescriptor descriptor) {
+        return new Task(jarFile, descriptor);
     }
 
-    private Task(Path inputFile, Path jarFile, TaskDescriptor descriptor) {
-        this(inputFile, jarFile, descriptor, new JarLoader(jarFile));
+    private Task(Path jarFile, TaskDescriptor descriptor) {
+        this(jarFile, descriptor, new JarLoader(jarFile));
     }
 
-    private Task(Path inputFile, Path jarFile, TaskDescriptor descriptor, JarLoader jarLoader) {
-        mInputFile = inputFile;
+    private Task(Path jarFile, TaskDescriptor descriptor, JarLoader jarLoader) {
         mJarFile = jarFile;
         mJarLoader = jarLoader;
         mDescriptor = descriptor;
@@ -53,10 +51,6 @@ public class Task {
 
     public Path getJarFile() {
         return mJarFile;
-    }
-
-    public Path getInputFile() {
-        return mInputFile;
     }
 
     public TaskDescriptor getDescriptor() {
