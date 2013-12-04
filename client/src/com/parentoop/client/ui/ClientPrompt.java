@@ -19,7 +19,6 @@ public class ClientPrompt {
     public static final String START_TASK_COMMAND = "run";
     public static final String DEFAULT_OUTPUT_NAME = "out.txt";
 
-
     private static String mTaskConfiguratorName;
     private static Path mJarPath;
     private static Path mInputPath;

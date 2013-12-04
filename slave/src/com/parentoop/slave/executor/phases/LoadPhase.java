@@ -1,39 +1,44 @@
-package com.parentoop.slave.node.phases;
+package com.parentoop.slave.executor.phases;
 
+import com.parentoop.core.api.Mapper;
+import com.parentoop.core.api.Reducer;
 import com.parentoop.core.loader.Task;
 import com.parentoop.core.loader.TaskDescriptor;
 import com.parentoop.core.networking.Messages;
-import com.parentoop.core.networking.Ports;
 import com.parentoop.network.api.Message;
-import com.parentoop.network.api.NodeClient;
-import com.parentoop.network.api.NodeServer;
 import com.parentoop.network.api.PeerCommunicator;
 import com.parentoop.slave.api.SlaveStorage;
-import com.parentoop.slave.node.PhaseExecutor;
+import com.parentoop.slave.executor.TaskParameters;
 import com.parentoop.slave.utils.service.ServiceUtils;
 
 import java.io.Serializable;
-import java.net.InetAddress;
 import java.nio.file.Path;
 
 public class LoadPhase extends Phase {
 
     private Path mJarPath;
     private TaskDescriptor mDescriptor;
+    private Mapper mMapper;
+    private Reducer mReducer;
 
-    public LoadPhase(PhaseExecutor executor) throws Exception {
-        super();
-        mExecutor = executor;
-        mMasterConnection = new NodeClient(InetAddress.getLocalHost(), Ports.MASTER_SLAVE_PORT, executor);
-        mSlaveConnection = new NodeServer(Ports.SLAVE_SLAVE_PORT, executor);
+    @Override
+    public void initialize(TaskParameters parameters) {
+        super.initialize(parameters);
         //noinspection unchecked
-        mStorage = (SlaveStorage<Serializable>) ServiceUtils.load(SlaveStorage.class);
-        mStorage.initialize();
+        SlaveStorage<Serializable> storage = (SlaveStorage<Serializable>) ServiceUtils.load(SlaveStorage.class);
+        parameters.setStorage(storage);
+        try {
+            storage.initialize();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public LoadPhase() throws Exception {
-        super();
-        mStorage.initialize();
+    @Override
+    public void terminate(TaskParameters parameters) {
+        parameters.setMapper(mMapper);
+        parameters.setReducer(mReducer);
+        super.terminate(parameters);
     }
 
     @Override

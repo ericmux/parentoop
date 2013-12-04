@@ -1,10 +1,13 @@
-package com.parentoop.slave.node.phases;
+package com.parentoop.slave.executor.phases;
 
+import com.parentoop.core.api.Mapper;
 import com.parentoop.core.data.Datum;
 import com.parentoop.core.data.NetworkDataPool;
 import com.parentoop.core.networking.Messages;
 import com.parentoop.network.api.Message;
 import com.parentoop.network.api.PeerCommunicator;
+import com.parentoop.slave.api.SlaveStorage;
+import com.parentoop.slave.executor.TaskParameters;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -22,6 +25,15 @@ public class MapPhase extends Phase {
     private NetworkDataPool mDataPool = new NetworkDataPool();
     private Thread mDataPersistorThread = null;
     private Set<String> mKeysFound = new HashSet<>();
+    private Mapper mMapper;
+    private SlaveStorage mStorage;
+
+    @Override
+    public void initialize(TaskParameters parameters) {
+        super.initialize(parameters);
+        mMapper = parameters.getMapper();
+        mStorage = parameters.getStorage();
+    }
 
     @Override
     public void execute(Message message, PeerCommunicator sender) {
@@ -32,16 +44,20 @@ public class MapPhase extends Phase {
                 mMappersThreadPool.submit(task);
                 break;
             case Messages.END_MAP:
-                try {
-                    mMappersThreadPool.shutdown();
-                    mMappersThreadPool.awaitTermination(MAX_TIME_ALLOWED_IN_SECONDS, TimeUnit.SECONDS);
-                    mDataPool.close();
-                    mDataPersistorThread.join();
-                    nextPhase(ReducePhase.class);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                endMap();
+                nextPhase(ReducePhase.class);
                 break;
+        }
+    }
+
+    private void endMap() {
+        try {
+            mMappersThreadPool.shutdown();
+            mMappersThreadPool.awaitTermination(MAX_TIME_ALLOWED_IN_SECONDS, TimeUnit.SECONDS);
+            mDataPool.close();
+            mDataPersistorThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
@@ -69,6 +85,7 @@ public class MapPhase extends Phase {
                         mKeysFound.add(key);
                         dispatchMessageToMaster(new Message(Messages.KEY_FOUND, key));
                     }
+                    //noinspection unchecked
                     mStorage.insert(key, datum.getValue());
                 }
             }

@@ -78,12 +78,9 @@ public class DataPool<V> implements Iterable<V>, Yielder<V> {
         public void remove() {
             throw new UnsupportedOperationException();
         }
-
-
     }
 
     public int getBufferSize() {
         return mBuffer.size();
     }
-
 }

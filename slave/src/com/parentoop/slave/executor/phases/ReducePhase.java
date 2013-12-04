@@ -1,10 +1,13 @@
-package com.parentoop.slave.node.phases;
+package com.parentoop.slave.executor.phases;
 
+import com.parentoop.core.api.Reducer;
 import com.parentoop.core.data.DataPool;
 import com.parentoop.core.data.Datum;
 import com.parentoop.core.networking.Messages;
 import com.parentoop.network.api.Message;
 import com.parentoop.network.api.PeerCommunicator;
+import com.parentoop.slave.api.SlaveStorage;
+import com.parentoop.slave.executor.TaskParameters;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -16,18 +19,35 @@ public class ReducePhase extends Phase {
 
     private final ExecutorService mReducersThreadPool = Executors.newCachedThreadPool();
     private final ExecutorService mValueSendersThreadPool = Executors.newCachedThreadPool();
+
+    private SlaveStorage<Serializable> mStorage;
+    private Reducer mReducer;
+
     private Collection<InetAddress> mSlaveAddresses;
     private List<String> mKeys;
     private Map<String, DataPool> mValues = new HashMap<>();
     private Map<String, Future<Serializable>> mResults = new HashMap<>();
-    private int mRequests = 0;
+    private Map<String, Integer> mRequests = new HashMap<>();
+    private int mTotalRequests = 0;
+
+    @Override
+    public void initialize(TaskParameters parameters) {
+        super.initialize(parameters);
+        mStorage = parameters.getStorage();
+        mReducer = parameters.getReducer();
+    }
+
+    @Override
+    public void terminate(TaskParameters parameters) {
+        mStorage.terminate();
+        super.terminate(parameters);
+    }
 
     @Override
     public void execute(Message message, PeerCommunicator sender) {
         switch (message.getCode()) {
             case Messages.LOAD_SLAVE_ADDRESSES: // param = { address }
                 mSlaveAddresses = Arrays.asList(message.<InetAddress[]>getData());
-                mRequests = mSlaveAddresses.size();
                 break;
             case Messages.REDUCE_KEYS: // param = { key }
                 mKeys = Arrays.asList(message.<String[]>getData());
@@ -42,20 +62,17 @@ public class ReducePhase extends Phase {
                 ValueSender task = new ValueSender(sender, message.<String>getData());
                 mValueSendersThreadPool.submit(task);
                 break;
-            case Messages.END_OF_DATA_STREAM: // no param
-                // TODO: Make it as function of key so as to return results as soon as they appear
-                mRequests--;
-                if (mRequests == 0) {
-                    collect();
-                    terminate();
+            case Messages.END_OF_DATA_STREAM: // param = key
+                String key = message.getData();
+                int n = mRequests.get(key) - 1;
+                mRequests.put(key, n);
+                if (n == 0) collect(key);
+                mTotalRequests--;
+                if (mTotalRequests == 0) {
+                    dispatchMessageToMaster(new Message(Messages.END_OF_RESULT_STREAM));
+                    nextPhase(LoadPhase.class);
                 }
         }
-    }
-
-    private void terminate() {
-        mStorage.terminate();
-        closeSlaves();
-        nextPhase(LoadPhase.class);
     }
 
     private void startReduce() {
@@ -69,23 +86,22 @@ public class ReducePhase extends Phase {
     }
 
     private void requestValues(String key) {
+        int size = mSlaveAddresses.size();
+        mRequests.put(key, size);
+        mTotalRequests += size;
         for (InetAddress slaveAddress : mSlaveAddresses) {
-            mRequests++;
             dispatchMessageToSlave(slaveAddress, new Message(Messages.REQUEST_VALUES, key));
         }
     }
 
-    public void collect() {
-        for (Map.Entry<String, Future<Serializable>> entry : mResults.entrySet()) {
-            Future<Serializable> future = entry.getValue();
-            try {
-                Datum datum = new Datum(entry.getKey(), future.get());
-                dispatchMessageToMaster(new Message(Messages.RESULT_PAIR, datum));
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-            }
+    public void collect(String key) {
+        Future<Serializable> future = mResults.get(key);
+        try {
+            Datum datum = new Datum(key, future.get());
+            dispatchMessageToMaster(new Message(Messages.RESULT_PAIR, datum));
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
         }
-        dispatchMessageToMaster(new Message(Messages.END_OF_RESULT_STREAM));
     }
 
     private class ReduceTask implements Callable<Serializable> {
@@ -121,7 +137,7 @@ public class ReducePhase extends Phase {
                 for (Serializable value : mStorage.read(mKey)) {
                     mDestination.dispatchMessage(new Message(Messages.KEY_VALUE, value));
                 }
-                mDestination.dispatchMessage(new Message(Messages.END_OF_DATA_STREAM));
+                mDestination.dispatchMessage(new Message(Messages.END_OF_DATA_STREAM, mKey));
             } catch (IOException e) {
                 e.printStackTrace();
             }

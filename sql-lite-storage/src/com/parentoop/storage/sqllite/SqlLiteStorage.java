@@ -76,6 +76,7 @@ public class SqlLiteStorage<T extends Serializable> implements SlaveStorage<T> {
             error.initCause(e);
             throw error;
         }
+
         // TODO: Clean up .db file
     }
 
