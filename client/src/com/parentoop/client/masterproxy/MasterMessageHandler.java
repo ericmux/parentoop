@@ -36,9 +36,6 @@ public class MasterMessageHandler implements MessageHandler{
             case Messages.REDUCING:
                 handleReducing(message, sender);
                 break;
-            case Messages.COLLECTING:
-                handleCollecting(message, sender);
-                break;
             case Messages.SEND_RESULT:
                 handleSendResult(message, sender);
                 break;
@@ -61,11 +58,6 @@ public class MasterMessageHandler implements MessageHandler{
 
     protected void handleReducing(Message message, PeerCommunicator sender){
         mPrintStream.println("\rReducing phase" + message.getData() + "% complete...");
-    }
-
-
-    protected void handleCollecting(Message message, PeerCommunicator sender){
-        mPrintStream.println("\rCollecting phase" + message.getData() + "% complete...");
     }
 
     protected void handleSendResult(Message message, PeerCommunicator sender){

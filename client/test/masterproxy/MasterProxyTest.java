@@ -150,11 +150,6 @@ public class MasterProxyTest {
         }
 
         @Override
-        protected void handleCollecting(Message message, PeerCommunicator sender) {
-            super.handleCollecting(message, sender);    //To change body of overridden methods use File | Settings | File Templates.
-        }
-
-        @Override
         protected void handleSendResult(Message message, PeerCommunicator sender) {
             Path receivedResult = message.getData();
             Path copiedPath;

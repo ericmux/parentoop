@@ -68,6 +68,7 @@ public class ClientPrompt {
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
+        mInputPath = Paths.get(args[3]);
 
         mHostAddress = InetAddress.getLocalHost();
 
