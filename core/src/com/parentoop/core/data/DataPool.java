@@ -11,6 +11,7 @@ public class DataPool<V> implements Iterable<V>, Yielder<V> {
     
     private Lock mLock = new ReentrantLock();
     private Condition mStreamUpdate = mLock.newCondition();
+
     private Queue<V> mBuffer = new LinkedList<>();
     private volatile boolean mOpened = true;
 
@@ -78,6 +79,11 @@ public class DataPool<V> implements Iterable<V>, Yielder<V> {
             throw new UnsupportedOperationException();
         }
 
+
+    }
+
+    public int getBufferSize() {
+        return mBuffer.size();
     }
 
 }
