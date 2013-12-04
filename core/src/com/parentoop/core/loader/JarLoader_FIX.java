@@ -5,11 +5,11 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
 
-public class JarLoader {
+public class JarLoader_FIX {
 
     private URLClassLoader mClassLoader;
 
-    public JarLoader(Path jarFile) {
+    public JarLoader_FIX(Path jarFile) {
         URL url = null;
         try {
             url = jarFile.toUri().toURL();

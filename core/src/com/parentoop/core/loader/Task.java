@@ -10,7 +10,7 @@ public class Task {
 
     private Path mInputFile;
     private Path mJarFile;
-    private JarLoader mJarLoader;
+    private JarLoader_FIX mJarLoader;
     private TaskDescriptor mDescriptor;
 
     private Mapper mMapper;
@@ -18,7 +18,7 @@ public class Task {
     private InputReader mInputReader;
 
     public static Task load(Path inputFile, Path jarFile, String taskConfiguratorClassName) {
-        JarLoader jarLoader = new JarLoader(jarFile);
+        JarLoader_FIX jarLoader = new JarLoader_FIX(jarFile);
 
         TaskConfigurator configurator = null;
         try {
@@ -41,10 +41,10 @@ public class Task {
     }
 
     private Task(Path inputFile, Path jarFile, TaskDescriptor descriptor) {
-        this(inputFile, jarFile, descriptor, new JarLoader(jarFile));
+        this(inputFile, jarFile, descriptor, new JarLoader_FIX(jarFile));
     }
 
-    private Task(Path inputFile, Path jarFile, TaskDescriptor descriptor, JarLoader jarLoader) {
+    private Task(Path inputFile, Path jarFile, TaskDescriptor descriptor, JarLoader_FIX jarLoader) {
         mInputFile = inputFile;
         mJarFile = jarFile;
         mJarLoader = jarLoader;
