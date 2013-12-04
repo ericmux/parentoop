@@ -1,5 +1,9 @@
 package com.parentoop.slave;
 
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+
 public class Main {
 
     // Prevents instantiation
@@ -8,17 +12,14 @@ public class Main {
     }
 
     public static void main(String[] args) throws Exception {
-//        SlaveApplication.getInstance().initialize();
-//        SlaveApplication app = SlaveApplication.getInstance();
-//        SlaveStorage storage = app.getSlaveStorage();
-//        storage.insert("key-a", new ArrayList<>(Arrays.asList(1, 2, 3)));
-//        storage.insert("key-a", "Stringao!");
-//        storage.insert("key-a", true);
-//        storage.insert("b", "value serializable B!");
-//        for (Object obj : storage.read("key-a")) {
-//            System.out.println(obj.getClass().getSimpleName() + ": " + obj);
-//        }
-//        SlaveApplication.getInstance().terminate();
+        List<Integer> list = Arrays.asList(1, 2, 3, 4);
+        Iterator<Integer> i;
+        for (i = list.iterator(); i.hasNext(); ) {
+            int v = i.next();
+            if (v == 3) list.add(5);
+        }
+        i.next();
+
     }
 
 }

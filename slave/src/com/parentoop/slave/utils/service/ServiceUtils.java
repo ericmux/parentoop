@@ -1,4 +1,4 @@
-package com.parentoop.slave.utils;
+package com.parentoop.slave.utils.service;
 
 import java.util.Iterator;
 import java.util.ServiceLoader;

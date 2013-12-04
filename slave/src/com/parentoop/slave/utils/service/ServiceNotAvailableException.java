@@ -1,4 +1,4 @@
-package com.parentoop.slave.utils;
+package com.parentoop.slave.utils.service;
 
 public class ServiceNotAvailableException extends IllegalStateException {
 
