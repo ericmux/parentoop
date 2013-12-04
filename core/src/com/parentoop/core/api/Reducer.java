@@ -1,4 +1,9 @@
 package com.parentoop.core.api;
 
-public interface Reducer {
+import java.io.Serializable;
+
+public interface Reducer<M extends Serializable, F extends Serializable> {
+
+    public F reduce(String key, Iterable<? extends M> values);
+
 }

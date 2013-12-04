@@ -11,12 +11,14 @@ public class Messages {
 
     // Mapping phase
     public static final int MAP_CHUNK = 101;                // Master-slave
+    public static final int END_MAP = 102;
+
 
     // Reducing phase
-    public static final int SLAVES_ADDRESSES = 201;         // Master-slave
+    public static final int LOAD_SLAVE_ADDRESSES = 201;     // Master-slave
     public static final int REDUCE_KEYS = 202;              // Master-slave
-    public static final int RETRIEVE_VALUE = 203;           // slave-Slave
-    public static final int SEND_VALUE = 204;               // Slave-slave
+    public static final int RETRIEVE_VALUES = 203;           // slave-Slave
+    public static final int RECEIVE_VALUE = 204;               // Slave-slave
     public static final int END_OF_VALUE_STREAM = 205;      // Slave-slave
 
     // Finalization

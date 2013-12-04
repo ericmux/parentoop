@@ -1,4 +1,9 @@
 package com.parentoop.core.api;
 
-public interface Mapper {
+import java.io.Serializable;
+
+public interface Mapper<T extends Serializable> {
+
+    public void map(T chunk, MapYielder yielder);
+
 }
