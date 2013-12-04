@@ -11,7 +11,6 @@ import com.parentoop.network.api.PeerCommunicator;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -26,7 +25,7 @@ public class ReducingPhase extends ExecutionPhase<Path> {
     private Set<String> mKeysToReduce;
     private ExecutorService mExecutorService;
 
-    private InetAddress[] mPeersAddresses;
+    private String[] mPeersAddresses;
     private Set<PeerCommunicator> mFinishedPeers;
 
     private Path mOutputFile;
@@ -56,11 +55,11 @@ public class ReducingPhase extends ExecutionPhase<Path> {
         mOutputFile = Files.createTempFile("parentoot", ".txt");
         mOutputStream = new PrintStream(new BufferedOutputStream(Files.newOutputStream(mOutputFile)));
 
-        List<InetAddress> peerAddresses = new ArrayList<>(peers.size());
+        List<String> peerAddresses = new ArrayList<>(peers.size());
         for (PeerCommunicator peer : peers) {
-            peerAddresses.add(peer.getAddress());
+            peerAddresses.add(peer.getAddress().getHostAddress());
         }
-        mPeersAddresses = peerAddresses.toArray(new InetAddress[peerAddresses.size()]);
+        mPeersAddresses = peerAddresses.toArray(new String[peerAddresses.size()]);
 
         List<Set<String>> disjointKeys = MoreSets.disjointSubsets(mKeysToReduce, peers.size());
         Iterator<Set<String>> keysIterator = disjointKeys.iterator();
@@ -75,7 +74,7 @@ public class ReducingPhase extends ExecutionPhase<Path> {
         switch (message.getCode()) {
             case Messages.RESULT_PAIR:
                 Datum datum = message.getData();
-                mOutputStream.println(datum.getKey() + " : " + datum.getValue());
+                mOutputStream.println(datum);
                 mOutputStream.flush();
                 mKeysToReduce.remove(datum.getKey());
                 break;

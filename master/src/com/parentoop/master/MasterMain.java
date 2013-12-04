@@ -22,7 +22,7 @@ public class MasterMain {
         System.out.println();
 
         while(true) {
-            System.out.print("Server running. Type 'q' to shutdown: ");
+            System.out.println("Server running. Type 'q' whenever to shutdown.");
             String in = inputScanner.nextLine();
             if (in.trim().equals("q")) break;
         }

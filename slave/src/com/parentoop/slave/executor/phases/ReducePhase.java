@@ -12,6 +12,7 @@ import com.parentoop.slave.executor.TaskParameters;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -47,7 +48,15 @@ public class ReducePhase extends Phase {
     public void execute(Message message, PeerCommunicator sender) {
         switch (message.getCode()) {
             case Messages.LOAD_SLAVE_ADDRESSES: // param = { address }
-                mSlaveAddresses = Arrays.asList(message.<InetAddress[]>getData());
+                String[] addresses = message.getData();
+                mSlaveAddresses = new ArrayList<>();
+                for (String address : addresses) {
+                    try {
+                        mSlaveAddresses.add(InetAddress.getByName(address));
+                    } catch (UnknownHostException e) {
+                        e.printStackTrace();
+                    }
+                }
                 break;
             case Messages.REDUCE_KEYS: // param = { key }
                 mKeys = Arrays.asList(message.<String[]>getData());
@@ -64,6 +73,7 @@ public class ReducePhase extends Phase {
                 break;
             case Messages.END_OF_DATA_STREAM: // param = key
                 String key = message.getData();
+
                 int n = mRequests.get(key) - 1;
                 mRequests.put(key, n);
                 if (n == 0) collect(key);
@@ -96,6 +106,7 @@ public class ReducePhase extends Phase {
     }
 
     public void collect(String key) {
+        mValues.get(key).close();
         Future<Serializable> future = mResults.get(key);
         try {
             Datum datum = new Datum(key, future.get());

@@ -86,7 +86,6 @@ public class ClientPrompt {
 
         printStream.println("Task started!");
 
-        printStream.close();
         scanner.close();
     }
 

@@ -59,6 +59,7 @@ public class LoadPhase extends Phase {
         Task task = Task.load(mJarPath, mDescriptor);
         mMapper = task.getMapper();
         mReducer = task.getReducer();
+        dispatchIdleMessage();
         nextPhase(MapPhase.class);
     }
 }

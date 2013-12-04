@@ -39,4 +39,9 @@ public class Message {
         result = 31 * result + (mData != null ? mData.hashCode() : 0);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return mCode + " : " + mData;
+    }
 }

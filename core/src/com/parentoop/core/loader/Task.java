@@ -65,7 +65,7 @@ public class Task {
         if (mMapper == null) {
             try {
                 mMapper = (Mapper) mJarLoader.loadClass(mDescriptor.getMapperClass()).newInstance();
-            } catch (InstantiationException | IllegalAccessException e) {
+            } catch (ReflectiveOperationException | ClassCastException e) {
                 e.printStackTrace();
             }
         }
@@ -75,8 +75,8 @@ public class Task {
     public Reducer getReducer() {
         if (mReducer == null) {
             try {
-                mReducer = (Reducer) mJarLoader.loadClass(mDescriptor.getMapperClass()).newInstance();
-            } catch (InstantiationException | IllegalAccessException e) {
+                mReducer = (Reducer) mJarLoader.loadClass(mDescriptor.getReducerClass()).newInstance();
+            } catch (ReflectiveOperationException | ClassCastException e) {
                 e.printStackTrace();
             }
         }
@@ -86,8 +86,8 @@ public class Task {
     public InputReader getInputReader() {
         if (mInputReader == null) {
             try {
-                mInputReader = (InputReader) mJarLoader.loadClass(mDescriptor.getMapperClass()).newInstance();
-            } catch (InstantiationException | IllegalAccessException e) {
+                mInputReader = (InputReader) mJarLoader.loadClass(mDescriptor.getInputReaderClass()).newInstance();
+            } catch (ReflectiveOperationException | ClassCastException e) {
                 e.printStackTrace();
             }
         }

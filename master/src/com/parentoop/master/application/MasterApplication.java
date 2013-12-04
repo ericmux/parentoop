@@ -53,7 +53,7 @@ public class MasterApplication implements TaskExecution.TaskExecutionListener<Pa
     }
 
     private void startTask(PeerCommunicator sender, String configuratorName) throws IOException {
-        debug("Attempting task start.");
+        debug("Attempting task load.");
         if (mTaskExecution != null) {
             sender.dispatchMessage(new Message(Messages.FAILURE, "Application busy. Currently running another task."));
             debug("Task starting failed. Application busy.");
@@ -65,7 +65,7 @@ public class MasterApplication implements TaskExecution.TaskExecutionListener<Pa
             debug("Task starting failed. Loading failure.");
             return;
         }
-        debug("Task loading. Starting execution.");
+        debug("Task named \"" + task.getDescriptor().getTaskName() + "\" loaded. Starting execution.");
         TaskExecution taskExecution = new MapReduceTaskExecution(mInputPath, task, this);
         taskExecution.setSlaveServer(mMasterSlaveServer, mSlaveMessageRouter);
         taskExecution.start();
@@ -87,6 +87,7 @@ public class MasterApplication implements TaskExecution.TaskExecutionListener<Pa
     public void onExecutionFailed(Throwable throwable) {
         try {
             debug("Task execution failed with message: " + throwable.getMessage());
+            throwable.printStackTrace();
             mTaskExecution = null;
             mMasterClientServer.broadcastMessage(new Message(Messages.FAILURE, throwable));
         } catch (IOException e) {

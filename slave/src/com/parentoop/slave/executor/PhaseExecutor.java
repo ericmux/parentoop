@@ -33,6 +33,7 @@ public class PhaseExecutor implements MessageHandler {
         mTaskParameters.setMasterConnection(mMasterConnection);
         Console.println("Setting Slave connection as server");
         NodeServer slaveConnection = new NodeServer(Ports.SLAVE_SLAVE_PORT, this);
+        slaveConnection.startServer();
         mTaskParameters.setSlaveConnection(slaveConnection);
         mPhase = new LoadPhase();
         mPhase.initialize(mTaskParameters);

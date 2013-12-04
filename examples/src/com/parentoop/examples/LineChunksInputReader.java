@@ -11,13 +11,20 @@ import java.util.Scanner;
 
 public class LineChunksInputReader implements InputReader {
 
+    public static final int LINES_PER_CHUNK = 100;
+
     @Override
     public void read(Path file, Yielder<Serializable> chunkYielder) {
         try {
             Scanner scanner = new Scanner(Files.newInputStream(file));
             while (scanner.hasNext()) {
-                String line = scanner.nextLine();
-                chunkYielder.yield(line);
+                StringBuilder chunkBuilder = new StringBuilder();
+                int lines = LINES_PER_CHUNK;
+                while (lines --> 0 && scanner.hasNext()) {
+                    chunkBuilder.append('\n');
+                    chunkBuilder.append(scanner.nextLine());
+                }
+                chunkYielder.yield(chunkBuilder.toString());
             }
         } catch (IOException e) {
             e.printStackTrace();

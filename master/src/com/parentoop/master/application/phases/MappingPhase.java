@@ -9,6 +9,7 @@ import com.parentoop.master.execution.ExecutionPhase;
 import com.parentoop.network.api.Message;
 import com.parentoop.network.api.PeerCommunicator;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Path;
 import java.util.Collection;
@@ -25,8 +26,11 @@ public class MappingPhase extends ExecutionPhase<Path> {
 
     private Path mInputPath;
     private Iterator<Serializable> mInputIterator;
+    private boolean mFinishedInput;
 
-    private BlockingQueue<PeerCommunicator> mIdlePeers;
+    private Set<PeerCommunicator> mIdleSlaves;
+
+    private BlockingQueue<PeerCommunicator> mChunkSendingQueue;
     private AtomicInteger mActiveChunkSendingThreads;
     private Set<String> mFoundKeys;
 
@@ -46,10 +50,11 @@ public class MappingPhase extends ExecutionPhase<Path> {
 
     @Override
     public void onEnterPhase(ExecutionPhase previousPhase) {
-        int chunkSenderThreads = Math.min(MAX_POOL_SIZE, getParticipatingPeers().size() / 2);
+        int chunkSenderThreads = Math.min(MAX_POOL_SIZE, getParticipatingPeers().size());
         mExecutorService = Executors.newFixedThreadPool(chunkSenderThreads + 1); // +1 for the input reader one
-        mIdlePeers = new LinkedBlockingQueue<>();
+        mIdleSlaves = Sets.newHashSet();
         mFoundKeys = Sets.newConcurrentHashSet();
+        mFinishedInput = false;
 
         final DataPool<Serializable> inputDataPool = new DataPool<>();
         mInputIterator = inputDataPool.iterator();
@@ -63,17 +68,21 @@ public class MappingPhase extends ExecutionPhase<Path> {
         });
 
         mActiveChunkSendingThreads = new AtomicInteger(0);
+        mChunkSendingQueue = new LinkedBlockingQueue<>(getParticipatingPeers());
         while (chunkSenderThreads --> 0) {
             mExecutorService.submit(new ChunkSendingRunnable());
         }
     }
 
     @Override
-    public void handleMessage(Message message, PeerCommunicator sender) {
+    public void handleMessage(Message message, PeerCommunicator sender) throws Exception {
         switch (message.getCode()) {
             case Messages.IDLE:
-                if (mIdlePeers.contains(sender)) return;
-                mIdlePeers.offer(sender);
+                if (mIdleSlaves.contains(sender)) return;
+                mIdleSlaves.add(sender);
+                if (mFinishedInput && mIdleSlaves.containsAll(getParticipatingPeers())) {
+                    goToNextPhase();
+                }
                 break;
             case Messages.KEY_FOUND:
                 String key = message.getData();
@@ -83,12 +92,9 @@ public class MappingPhase extends ExecutionPhase<Path> {
     }
 
     @Override
-    public void onExitPhase(ExecutionPhase nextPhase) {
-        if (nextPhase instanceof ReducingPhase) {
-            ((ReducingPhase) nextPhase).setKeysToReduce(mFoundKeys);
-        }
+    public void onExitPhase(ExecutionPhase nextPhase) throws IOException {
         mExecutorService.shutdownNow();
-        mIdlePeers.clear();
+        mChunkSendingQueue.clear();
         if (nextPhase instanceof ReducingPhase) {
             ((ReducingPhase) nextPhase).setKeysToReduce(mFoundKeys);
         }
@@ -99,9 +105,10 @@ public class MappingPhase extends ExecutionPhase<Path> {
         @Override
         public Void call() throws Exception {
             if (!mInputIterator.hasNext()) return null;
-            mActiveChunkSendingThreads.incrementAndGet();
+            mActiveChunkSendingThreads.getAndIncrement();
             try {
                 while (true) {
+                    PeerCommunicator peer = mChunkSendingQueue.take();
                     Serializable chunk;
                     try {
                         chunk = mInputIterator.next();
@@ -109,14 +116,18 @@ public class MappingPhase extends ExecutionPhase<Path> {
                         if (!mInputIterator.hasNext()) break;
                         continue;
                     }
-                    PeerCommunicator peer = mIdlePeers.take();
                     peer.dispatchMessage(new Message(Messages.MAP_CHUNK, chunk));
+                    mChunkSendingQueue.put(peer);
                 }
                 return null;
             } finally {
-                int active = mActiveChunkSendingThreads.decrementAndGet();
-                if (active == 0) {
-                    goToNextPhase();
+                int activeThreads = mActiveChunkSendingThreads.decrementAndGet();
+                if (activeThreads == 0) {
+                    mFinishedInput = true;
+                    mIdleSlaves.clear();
+                    for (PeerCommunicator peer : getParticipatingPeers()) {
+                        peer.dispatchMessage(new Message(Messages.END_OF_CHUNK_STREAM));
+                    }
                 }
             }
         }

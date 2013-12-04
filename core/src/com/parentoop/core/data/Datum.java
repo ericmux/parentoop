@@ -37,4 +37,8 @@ public final class Datum implements Serializable {
         return result;
     }
 
+    @Override
+    public String toString() {
+        return key + " : " + value;
+    }
 }

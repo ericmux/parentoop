@@ -42,9 +42,8 @@ public class MapPhase extends Phase {
                 if (mDataPersistorThread == null) startDataPersistor();
                 Runnable task = new MapTask(message.<Serializable>getData());
                 mMappersThreadPool.submit(task);
-                dispatchIdleMessage();
                 break;
-            case Messages.END_MAP:
+            case Messages.END_OF_CHUNK_STREAM:
                 endMap();
                 nextPhase(ReducePhase.class);
                 dispatchIdleMessage();
@@ -85,7 +84,7 @@ public class MapPhase extends Phase {
                     String key = datum.getKey();
                     if (!mKeysFound.contains(key)) {
                         mKeysFound.add(key);
-                        dispatchMessageToMaster(new Message(Messages.KEY_FOUND, key));
+//                        dispatchMessageToMaster(new Message(Messages.KEY_FOUND, key));
                     }
                     //noinspection unchecked
                     mStorage.insert(key, datum.getValue());

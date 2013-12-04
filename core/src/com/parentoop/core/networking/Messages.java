@@ -14,7 +14,7 @@ public class Messages {
     // Mapping phase
     public static final int MAP_CHUNK = 101;                // Master-slave
     public static final int KEY_FOUND = 102;
-    public static final int END_MAP = 103;
+    public static final int END_OF_CHUNK_STREAM = 103;
 
     // Reducing phase
     public static final int LOAD_SLAVE_ADDRESSES = 201;     // Master-slave

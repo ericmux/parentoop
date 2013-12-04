@@ -61,6 +61,10 @@ public class TaskExecution<R> {
         mTaskExecutor = new SingleThreadExecutor();
         mTaskExecutor.setUncaughtExceptionHandler(new UncaughtExceptionFailer());
 
+        if (mParticipatingPeers.isEmpty()) {
+            failExecution(new IllegalStateException("No slaves connected."));
+            return;
+        }
         mCurrentPhase = null;
         mNextPhaseIdx = 0;
         goToNextPhase();
@@ -158,6 +162,7 @@ public class TaskExecution<R> {
 
         @Override
         public void handle(final Message message, final PeerCommunicator sender) {
+            //System.out.println(message + " from " + sender.getAddress());
             final ExecutionPhase currentPhase = mCurrentPhase;
             if (currentPhase != null) {
                 mTaskExecutor.execute(new Runnable() {

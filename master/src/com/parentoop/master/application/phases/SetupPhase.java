@@ -93,7 +93,8 @@ public class SetupPhase extends ExecutionPhase<Path> {
                     // c'mon, more than 5 seconds just to set up? Who's not setup yet WILL be purged! ò.ó
                     retainAllPeers(mIdlePeers);
                     if (getParticipatingPeers().size() == 0) {
-                        throw new IllegalStateException("No slave machines could be correctly configured.");
+                        failExecution(new IllegalStateException("No slave machines could be correctly configured."));
+                        return;
                     }
                     goToNextPhase();
                 }
