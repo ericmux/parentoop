@@ -1,9 +1,12 @@
 package com.parentoop.core.api;
 
-import java.io.InputStream;
+import com.parentoop.core.data.Yielder;
+
 import java.io.Serializable;
+import java.nio.file.Path;
 
 public interface InputReader {
 
-    public Iterable<? extends Serializable> read(InputStream input);
+    public void read(Path file, Yielder<Serializable> chunkYielder);
+
 }
