@@ -135,7 +135,7 @@ public class ReducePhase extends Phase {
         public void run() {
             try {
                 for (Serializable value : mStorage.read(mKey)) {
-                    mDestination.dispatchMessage(new Message(Messages.KEY_VALUE, value));
+                    mDestination.dispatchMessage(new Message(Messages.KEY_VALUE, new Datum(mKey, value)));
                 }
                 mDestination.dispatchMessage(new Message(Messages.END_OF_DATA_STREAM, mKey));
             } catch (IOException e) {
