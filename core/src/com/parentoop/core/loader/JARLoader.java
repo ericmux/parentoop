@@ -9,7 +9,7 @@ public class JarLoader {
 
     private URLClassLoader mClassLoader;
 
-    public JarLoader(Path jarFile){
+    public JarLoader(Path jarFile) {
         URL url = null;
         try {
             url = jarFile.toUri().toURL();
@@ -19,7 +19,11 @@ public class JarLoader {
         mClassLoader = new URLClassLoader(new URL[] { url });
     }
 
-    public Class<?> loadClass(String className){
+    public ClassLoader getClassLoader() {
+        return mClassLoader;
+    }
+
+    public Class<?> loadClass(String className) {
         try {
             return Class.forName(className, true, mClassLoader);
         } catch (ClassNotFoundException e) {

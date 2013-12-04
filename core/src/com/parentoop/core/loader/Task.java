@@ -8,6 +8,8 @@ import java.nio.file.Path;
 
 public class Task {
 
+    private Path mInputFile;
+    private Path mJarFile;
     private JarLoader mJarLoader;
     private TaskDescriptor mDescriptor;
 
@@ -15,28 +17,54 @@ public class Task {
     private Reducer mReducer;
     private InputReader mInputReader;
 
-    public static Task configure(Path jarFile, String taskConfiguratorClassName) throws IllegalAccessException,
-            InstantiationException {
+    public static Task load(Path inputFile, Path jarFile, String taskConfiguratorClassName) {
         JarLoader jarLoader = new JarLoader(jarFile);
+
+        TaskConfigurator configurator = null;
+        try {
+            Class<?> configuratorClass = jarLoader.loadClass(taskConfiguratorClassName);
+            if (configuratorClass == null) return null;
+            configurator = (TaskConfigurator) configuratorClass.newInstance();
+        } catch (ClassCastException | ReflectiveOperationException e) {
+            e.printStackTrace();
+        }
+        if (configurator == null) return null;
+
         TaskDescriptor descriptor = new TaskDescriptor();
-        Class<?> configuratorClass = jarLoader.loadClass(taskConfiguratorClassName);
-        TaskConfigurator configurator = (TaskConfigurator) configuratorClass.newInstance();
         configurator.configure(descriptor);
-        return new Task(jarLoader, descriptor);
+
+        return new Task(inputFile, jarFile, descriptor, jarLoader);
     }
 
-    public static Task load(Path jarFile, TaskDescriptor descriptor) {
-        JarLoader jarLoader = new JarLoader(jarFile);
-        return new Task(jarLoader, descriptor);
+    public static Task load(Path inputFile, Path jarFile, TaskDescriptor descriptor) {
+        return new Task(inputFile, jarFile, descriptor);
     }
 
-    private Task(JarLoader jarLoader, TaskDescriptor descriptor) {
+    private Task(Path inputFile, Path jarFile, TaskDescriptor descriptor) {
+        this(inputFile, jarFile, descriptor, new JarLoader(jarFile));
+    }
+
+    private Task(Path inputFile, Path jarFile, TaskDescriptor descriptor, JarLoader jarLoader) {
+        mInputFile = inputFile;
+        mJarFile = jarFile;
         mJarLoader = jarLoader;
         mDescriptor = descriptor;
     }
 
+    public Path getJarFile() {
+        return mJarFile;
+    }
+
+    public Path getInputFile() {
+        return mInputFile;
+    }
+
     public TaskDescriptor getDescriptor() {
         return mDescriptor;
+    }
+
+    public ClassLoader getJarClassLoader() {
+        return mJarLoader.getClassLoader();
     }
 
     public Mapper getMapper() {
