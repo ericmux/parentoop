@@ -11,6 +11,7 @@ import com.parentoop.network.api.messaging.MessageRouter;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.Executor;
 
 public class TaskExecution<R> {
@@ -40,6 +41,18 @@ public class TaskExecution<R> {
         mSlaveMessageRouter = slaveMessageRouter;
     }
 
+    public Task getTask() {
+        return mTask;
+    }
+
+    public synchronized Collection<PeerCommunicator> getParticipatingPeers() {
+        return Collections.unmodifiableCollection(mParticipatingPeers);
+    }
+
+    public int getCurrentPhaseCode() {
+        return mCurrentPhase.getPhaseCode();
+    }
+
     public void start() {
         if (mStarted) throw new IllegalStateException("Task execution can be started only once.");
         mStarted = true;
@@ -53,20 +66,12 @@ public class TaskExecution<R> {
         goToNextPhase();
     }
 
-    public Task getTask() {
-        return mTask;
+    public void abort() {
+        failExecution(new CancellationException("User cancelled task."));
     }
 
-    public Executor getTaskExecutor() {
+    Executor getTaskExecutor() {
         return mTaskExecutor;
-    }
-
-    public synchronized Collection<PeerCommunicator> getParticipatingPeers() {
-        return Collections.unmodifiableCollection(mParticipatingPeers);
-    }
-
-    public ExecutionPhase getCurrentPhase() {
-        return mCurrentPhase;
     }
 
     void retainAllPeers(final Collection<PeerCommunicator> peersToRetain) {
@@ -92,29 +97,14 @@ public class TaskExecution<R> {
         mTaskExecutor.execute(new Runnable() {
             @Override
             public void run() {
-                try {
-                    ExecutionPhase previousPhase = mCurrentPhase;
-                    if (mNextPhaseIdx < mExecutionPhases.size()) mCurrentPhase = mExecutionPhases.get(mNextPhaseIdx++);
-                    else mCurrentPhase = null;
+                ExecutionPhase<R> nextPhase;
+                if (mNextPhaseIdx < mExecutionPhases.size()) nextPhase = mExecutionPhases.get(mNextPhaseIdx++);
+                else nextPhase = null;
 
-                    if (previousPhase != null) {
-                        mSlaveMessageRouter.unregisterHandler(mMessageHandlerProxy);
-                        previousPhase.onExitPhase(mCurrentPhase);
-                    }
-                    if (mCurrentPhase == null) {
-                        mExecutionListener.onExecutionSuccessful(null);
-                        return;
-                    }
-                    mCurrentPhase.setTaskExecution(TaskExecution.this);
-                    mCurrentPhase.onEnterPhase(mCurrentPhase);
-                } catch (Exception e) {
-                    failExecution(e);
-                    return;
+                transitionToPhase(nextPhase);
+                if (nextPhase == null) {
+                    mExecutionListener.onExecutionSuccessful(null);
                 }
-                for (int messageCode : mCurrentPhase.getHandledMessageCodes()) {
-                    mSlaveMessageRouter.registerHandler(messageCode, mMessageHandlerProxy);
-                }
-                mExecutionListener.onEnterExecutionPhase(mCurrentPhase.getPhaseCode());
             }
         });
     }
@@ -123,6 +113,7 @@ public class TaskExecution<R> {
         mTaskExecutor.execute(new Runnable() {
             @Override
             public void run() {
+                transitionToPhase(null);
                 mExecutionListener.onExecutionFailed(throwable);
                 mTaskExecutor.shutdownNow();
             }
@@ -133,16 +124,41 @@ public class TaskExecution<R> {
         mTaskExecutor.execute(new Runnable() {
             @Override
             public void run() {
+                transitionToPhase(null);
                 mExecutionListener.onExecutionSuccessful(result);
+                mTaskExecutor.shutdownNow();
             }
         });
+    }
+
+    private void transitionToPhase(ExecutionPhase<R> nextPhase) {
+        try {
+            ExecutionPhase<R> previousPhase = mCurrentPhase;
+            mCurrentPhase = nextPhase;
+
+            if (previousPhase != null) {
+                mSlaveMessageRouter.unregisterHandler(mMessageHandlerProxy);
+                previousPhase.onExitPhase(mCurrentPhase);
+            }
+            if (mCurrentPhase == null) return;
+
+            mCurrentPhase.setTaskExecution(TaskExecution.this);
+            for (int messageCode : mCurrentPhase.getHandledMessageCodes()) {
+                mSlaveMessageRouter.registerHandler(messageCode, mMessageHandlerProxy);
+            }
+            mCurrentPhase.onEnterPhase(previousPhase);
+
+            mExecutionListener.onEnterExecutionPhase(mCurrentPhase.getPhaseCode());
+        } catch (Exception e) {
+            failExecution(e);
+        }
     }
 
     private class MessageHandlerProxy implements MessageHandler {
 
         @Override
         public void handle(final Message message, final PeerCommunicator sender) {
-            final ExecutionPhase currentPhase = getCurrentPhase();
+            final ExecutionPhase currentPhase = mCurrentPhase;
             if (currentPhase != null) {
                 mTaskExecutor.execute(new Runnable() {
                     @Override

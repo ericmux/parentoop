@@ -26,7 +26,7 @@ public abstract class ExecutionPhase<R> {
     }
 
     protected void goToNextPhase() {
-        if (mTaskExecution.getCurrentPhase() != this) return;
+        if (mTaskExecution.getCurrentPhaseCode() != getPhaseCode()) return;
         mTaskExecution.goToNextPhase();
     }
 
