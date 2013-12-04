@@ -22,6 +22,7 @@ public class ClientPrompt {
 
     private static String mTaskConfiguratorName;
     private static Path mJarPath;
+    private static Path mInputPath;
     private static InetAddress mHostAddress = null;
     private static String mOutputName;
 
@@ -33,8 +34,8 @@ public class ClientPrompt {
 
 
         Scanner scanner = new Scanner(inputStream).useDelimiter("\\n");
-        if(args.length < 3){
-            args = new String[4];
+        if(args.length < 4){
+            args = new String[5];
             printStream.print("Please indicate the relative path to the .jar file containing your MapReduce settings: ");
             args[0] = scanner.next();
 
@@ -44,12 +45,15 @@ public class ClientPrompt {
             printStream.print("Host's IPAddress: ");
             args[2] = scanner.next();
 
-            printStream.print("Output file name (or press Enter to use default name \"" + DEFAULT_OUTPUT_NAME + "\"): ");
+            printStream.print("Path to input: ");
             args[3] = scanner.next();
-            if(args[3].isEmpty()) args[3] = DEFAULT_OUTPUT_NAME;
+
+            printStream.print("Output file name (or press Enter to use default name \"" + DEFAULT_OUTPUT_NAME + "\"): ");
+            args[4] = scanner.next();
+            if(args[4].isEmpty()) args[4] = DEFAULT_OUTPUT_NAME;
 
         } else {
-            if (args.length == 3) {
+            if (args.length == 4) {
                 mOutputName = DEFAULT_OUTPUT_NAME;
             }
             else {
@@ -72,6 +76,8 @@ public class ClientPrompt {
         printStream.println(mHostAddress);
         MasterProxy masterProxy = new MasterProxy(mHostAddress, new MasterMessageHandler(printStream, mOutputName));
         masterProxy.sendFile(Messages.LOAD_JAR, mJarPath);
+
+        masterProxy.dispatchMessage(Messages.LOAD_INPUT_PATH, mInputPath.toString());
 
         printStream.print("Type \"run\" to start the task: ");
 

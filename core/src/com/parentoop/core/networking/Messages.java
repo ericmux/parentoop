@@ -8,6 +8,8 @@ public class Messages {
     public static final int START_TASK = 3;                 // client-Master
     public static final int FAILURE = 4;                    // Master-client
     public static final int LOAD_DESCRIPTOR = 5;            // Master-slave
+    public static final int LOAD_INPUT_PATH = 6;            // Master-slave
+
 
     // Mapping phase
     public static final int MAP_CHUNK = 101;                // Master-slave
