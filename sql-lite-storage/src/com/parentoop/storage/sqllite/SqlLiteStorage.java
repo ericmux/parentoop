@@ -11,6 +11,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SqlLiteStorage<T extends Serializable> implements SlaveStorage<T> {
 
@@ -103,10 +105,18 @@ public class SqlLiteStorage<T extends Serializable> implements SlaveStorage<T> {
 
     private static final String INSERT_VALUE_QUERY = "INSERT INTO data (`key_id`, `value`) VALUES (?, ?)";
 
+    private Map<String, Integer> mKeysMemoize = new HashMap<>();
+
     @Override
     public void insert(String key, T value) {
         try {
-            int id = selectOrCreateKeyId(key);
+            int id;
+            if (!mKeysMemoize.containsKey(key)) {
+                id = selectOrCreateKeyId(key);
+                mKeysMemoize.put(key, id);
+            } else {
+                id = mKeysMemoize.get(key);
+            }
             byte[] bytes = SerializableConverter.toByteArray(value);
             mQueryHelper.update(INSERT_VALUE_QUERY, id, (Object) bytes).close();
         } catch (SQLException | IOException e) {
