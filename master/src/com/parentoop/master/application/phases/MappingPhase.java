@@ -89,6 +89,9 @@ public class MappingPhase extends ExecutionPhase<Path> {
         }
         mExecutorService.shutdownNow();
         mIdlePeers.clear();
+        if (nextPhase instanceof ReducingPhase) {
+            ((ReducingPhase) nextPhase).setKeysToReduce(mFoundKeys);
+        }
     }
 
     private class ChunkSendingRunnable implements Callable<Void> {

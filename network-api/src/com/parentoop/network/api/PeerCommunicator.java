@@ -1,6 +1,7 @@
 package com.parentoop.network.api;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,6 +29,10 @@ public abstract class PeerCommunicator {
         mInputStream = new CustomObjectInputStream(new BufferedInputStream(socket.getInputStream()));
 
         mReadTaskFuture = executorService.scheduleWithFixedDelay(new ReadRunnable(), 0, 100, TimeUnit.NANOSECONDS);
+    }
+
+    public InetAddress getAddress() {
+        return mSocket.getInetAddress();
     }
 
     public void setClassLoader(ClassLoader classLoader) {
