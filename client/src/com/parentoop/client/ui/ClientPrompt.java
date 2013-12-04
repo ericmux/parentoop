@@ -70,8 +70,6 @@ public class ClientPrompt {
         }
         mInputPath = Paths.get(args[3]);
 
-        mHostAddress = InetAddress.getLocalHost();
-
         printStream.println("Sending " + mJarPath + " to " + mHostAddress + "...");
 
         printStream.println(mHostAddress);
