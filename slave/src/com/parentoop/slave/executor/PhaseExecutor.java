@@ -37,6 +37,7 @@ public class PhaseExecutor implements MessageHandler {
         mTaskParameters.setSlaveConnection(slaveConnection);
         mPhase = new LoadPhase();
         mPhase.initialize(mTaskParameters);
+        dispatchIdleMessage();
     }
 
     @Override
