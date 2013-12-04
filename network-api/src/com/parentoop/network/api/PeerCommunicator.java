@@ -17,6 +17,7 @@ public abstract class PeerCommunicator {
     protected Socket mSocket;
     private ObjectInputStream mInputStream;
     private ObjectOutputStream mOutputStream;
+    private ClassLoader mClassLoader = ClassLoader.getSystemClassLoader();
 
     private Future<?> mReadTaskFuture;
 
@@ -24,11 +25,20 @@ public abstract class PeerCommunicator {
         mSocket = socket;
         mOutputStream = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
         mOutputStream.flush();
-        mInputStream = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
+        mInputStream = new CustomObjectInputStream(new BufferedInputStream(socket.getInputStream()));
+
         mReadTaskFuture = executorService.scheduleWithFixedDelay(new ReadRunnable(), 0, 100, TimeUnit.NANOSECONDS);
     }
 
-    public void dispatchMessage(Message message) throws IOException {
+    public void setClassLoader(ClassLoader classLoader) {
+        if (classLoader == null) {
+            mClassLoader = ClassLoader.getSystemClassLoader();
+        } else {
+            mClassLoader = classLoader;
+        }
+    }
+
+    public synchronized void dispatchMessage(Message message) throws IOException {
         Object data = message.getData();
         if (data instanceof Path) {
             mOutputStream.writeByte(FILE_HEADER);
@@ -105,6 +115,22 @@ public abstract class PeerCommunicator {
                 }
             } catch (IOException | ClassNotFoundException ex) {
                 ex.printStackTrace();
+            }
+        }
+    }
+
+    private class CustomObjectInputStream extends ObjectInputStream {
+
+        public CustomObjectInputStream(InputStream in) throws IOException {
+            super(in);
+        }
+
+        @Override
+        protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
+            try {
+                return Class.forName(desc.getName(), true, mClassLoader);
+            } catch (ClassNotFoundException ex) {
+                return super.resolveClass(desc);
             }
         }
     }

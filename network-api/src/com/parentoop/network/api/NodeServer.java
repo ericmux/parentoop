@@ -23,12 +23,13 @@ public class NodeServer {
     private int mBacklog;
 
     private ServerSocket mServerSocket;
-    private MessageHandler mMessageHandler;
     private ScheduledExecutorService mExecutorService;
+    private MessageHandler mMessageHandler;
+    private ClassLoader mClassLoader = null;
 
-    private HashMap<InetAddress, PeerHandler> mPeerHandlers = new HashMap<>();
+    private HashMap<InetAddress, PeerCommunicator> mPeerHandlers = new HashMap<>();
 
-    public NodeServer(int connectionPort, MessageHandler messageHandler) throws IOException {
+    public NodeServer(int connectionPort, MessageHandler messageHandler) {
         this(connectionPort, messageHandler, DEFAULT_BACKLOG);
     }
 
@@ -46,20 +47,39 @@ public class NodeServer {
         mExecutorService.submit(new ListeningRunnable());
     }
 
-    public void broadcastMessage(Message message) throws IOException {
-        for (PeerHandler peerHandler : getConnectedPeers()) {
-            peerHandler.dispatchMessage(message);
+    public void setClassLoader(ClassLoader classLoader) {
+        mClassLoader = classLoader;
+        for (PeerCommunicator peerHandler : getConnectedPeers()) {
+            peerHandler.setClassLoader(mClassLoader);
         }
     }
 
-    public Collection<PeerHandler> getConnectedPeers(){
+    public void broadcastMessage(Message message) throws IOException {
+        broadcastMessage(message, getConnectedPeers());
+    }
+
+    public void broadcastMessage(Message message, Collection<PeerCommunicator> peers) throws IOException {
+        Collection<PeerCommunicator> connectedPeers = getConnectedPeers();
+        IOException thrownException = null;
+        for (PeerCommunicator peerHandler : peers) {
+            if (!connectedPeers.contains(peerHandler)) continue;
+            try {
+                peerHandler.dispatchMessage(message);
+            } catch (IOException ex) {
+                thrownException = ex;
+            }
+        }
+        if (thrownException != null) throw thrownException;
+    }
+
+    public Collection<PeerCommunicator> getConnectedPeers(){
         return Collections.unmodifiableCollection(mPeerHandlers.values());
     }
 
     public void shutdown() throws IOException {
         if (mServerSocket == null) throw new IllegalStateException("Attempting shutdown on non started server");
 
-        for (PeerHandler peerHandler : mPeerHandlers.values()) {
+        for (PeerCommunicator peerHandler : getConnectedPeers()) {
             peerHandler.shutdown();
         }
         mExecutorService.shutdown();
@@ -86,6 +106,7 @@ public class NodeServer {
                 try {
                     Socket socket = mServerSocket.accept();
                     PeerHandler peerHandler = new PeerHandler(socket);
+                    peerHandler.setClassLoader(mClassLoader);
                     mPeerHandlers.put(socket.getInetAddress(), peerHandler);
                 } catch (SocketException ex) {
                     String excMessage = ex.getMessage();

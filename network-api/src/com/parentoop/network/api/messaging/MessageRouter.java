@@ -22,19 +22,23 @@ public class MessageRouter implements MessageHandler {
         handler.handle(message, sender);
     }
 
-    public void register(Integer messageType, MessageHandler handler) {
-        mHub.put(messageType, handler);
+    public void registerHandler(int messageCode, MessageHandler handler) {
+        mHub.put(messageCode, handler);
     }
 
-    public void unregister(Integer messageType) {
+    public void unregisterHandler(MessageHandler messageHandler) {
+        mHub.values().remove(messageHandler);
+    }
+
+    public void unregisterHandlerFor(Integer messageType) {
         mHub.remove(messageType);
     }
 
-    public void registerDefault(MessageHandler handler) {
+    public void registerDefaultHandler(MessageHandler handler) {
         mDefaultHandler = handler;
     }
 
-    public void unregisterDefault() {
+    public void unregisterDefaultHandler() {
         mDefaultHandler = null;
     }
 }
