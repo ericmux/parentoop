@@ -1,8 +1,8 @@
 package com.parentoop.core.data;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -11,11 +11,11 @@ public class DataPool<V> implements Iterable<V>, Yielder<V> {
     
     private Lock mLock = new ReentrantLock();
     private Condition mStreamUpdate = mLock.newCondition();
-    private List<V> mBuffer = new ArrayList<>();
+    private Queue<V> mBuffer = new LinkedList<>();
     private volatile boolean mOpened = true;
 
     public void yield(V item) {
-        if (mOpened) throw new IllegalStateException("Cannot yield data while closed.");
+        if (!mOpened) throw new IllegalStateException("Cannot yield data after closed.");
         mLock.lock();
         try {
             mBuffer.add(item);
@@ -35,23 +35,25 @@ public class DataPool<V> implements Iterable<V>, Yielder<V> {
         }
     }
 
+    private boolean mIteratorReturned = false;
+
     @Override
     public Iterator<V> iterator() {
-        // Problems with multiple iterators returned? throw error or return same
+        if (mIteratorReturned) {
+            throw new IllegalStateException("Only one iterator is allowed since it consumes the list while iterating");
+        }
+        mIteratorReturned = true;
         return new DataPoolIterator();
     }
 
     private class DataPoolIterator implements Iterator<V> {
 
-        private int mIndex = 0;
-
         @Override
         public boolean hasNext() {
-            if (!mOpened) return false;
             mLock.lock();
             try {
-                while (mOpened && mIndex == mBuffer.size() - 1) mStreamUpdate.await();
-                return mIndex < mBuffer.size() - 1;
+                while (mOpened && mBuffer.isEmpty()) mStreamUpdate.await();
+                return !mBuffer.isEmpty();
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 return false;
@@ -62,10 +64,10 @@ public class DataPool<V> implements Iterable<V>, Yielder<V> {
 
         @Override
         public V next() {
-            if (!hasNext()) throw new ArrayIndexOutOfBoundsException();
+            if (!hasNext()) throw new IllegalStateException();
             mLock.lock();
             try {
-                return mBuffer.get(mIndex++);
+                return mBuffer.remove();
             } finally {
                 mLock.unlock();
             }

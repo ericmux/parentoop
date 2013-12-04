@@ -8,6 +8,7 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="client" />
+    <orderEntry type="library" name="commons-collections" level="application" />
   </component>
 </module>
 
