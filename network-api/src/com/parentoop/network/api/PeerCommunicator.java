@@ -25,7 +25,6 @@ public abstract class PeerCommunicator {
         mOutputStream = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
         mOutputStream.flush();
         mInputStream = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
-
         mReadTaskFuture = executorService.scheduleWithFixedDelay(new ReadRunnable(), 0, 100, TimeUnit.NANOSECONDS);
     }
 
