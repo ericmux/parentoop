@@ -28,6 +28,7 @@ public class NodeServer {
     private ClassLoader mClassLoader = null;
 
     private HashMap<InetAddress, PeerCommunicator> mPeerHandlers = new HashMap<>();
+    private PeerConnetionListener mPeerConnetionListener;
 
     public NodeServer(int connectionPort, MessageHandler messageHandler) {
         this(connectionPort, messageHandler, DEFAULT_BACKLOG);
@@ -39,6 +40,17 @@ public class NodeServer {
         mMessageHandler = messageHandler;
     }
 
+    public void setPeerConnetionListener(PeerConnetionListener peerConnetionListener) {
+        mPeerConnetionListener = peerConnetionListener;
+    }
+
+    public void setClassLoader(ClassLoader classLoader) {
+        mClassLoader = classLoader;
+        for (PeerCommunicator peerHandler : getConnectedPeers()) {
+            peerHandler.setClassLoader(mClassLoader);
+        }
+    }
+
     public void startServer() throws IOException {
         if (mServerSocket != null) throw new IllegalStateException("Server already started");
 
@@ -47,11 +59,14 @@ public class NodeServer {
         mExecutorService.submit(new ListeningRunnable());
     }
 
-    public void setClassLoader(ClassLoader classLoader) {
-        mClassLoader = classLoader;
+    public void shutdown() throws IOException {
+        if (mServerSocket == null) throw new IllegalStateException("Attempting shutdown on non started server");
+
         for (PeerCommunicator peerHandler : getConnectedPeers()) {
-            peerHandler.setClassLoader(mClassLoader);
+            peerHandler.shutdown();
         }
+        mExecutorService.shutdownNow();
+        mServerSocket.close();
     }
 
     public void broadcastMessage(Message message) throws IOException {
@@ -76,16 +91,6 @@ public class NodeServer {
         return Collections.unmodifiableCollection(mPeerHandlers.values());
     }
 
-    public void shutdown() throws IOException {
-        if (mServerSocket == null) throw new IllegalStateException("Attempting shutdown on non started server");
-
-        for (PeerCommunicator peerHandler : getConnectedPeers()) {
-            peerHandler.shutdown();
-        }
-        mExecutorService.shutdown();
-        mServerSocket.close();
-    }
-
     public boolean isStarted() {
         return mServerSocket != null;
     }
@@ -102,12 +107,13 @@ public class NodeServer {
 
         @Override
         public void run() {
-            while (!mServerSocket.isClosed()) {
+            while (!Thread.interrupted() && !mServerSocket.isClosed()) {
                 try {
                     Socket socket = mServerSocket.accept();
                     PeerHandler peerHandler = new PeerHandler(socket);
                     peerHandler.setClassLoader(mClassLoader);
                     mPeerHandlers.put(socket.getInetAddress(), peerHandler);
+                    if (mPeerConnetionListener != null) mPeerConnetionListener.onPeerConnected(peerHandler);
                 } catch (SocketException ex) {
                     String excMessage = ex.getMessage();
                     if (excMessage == null) excMessage = "";
@@ -141,6 +147,7 @@ public class NodeServer {
                 super.shutdown();
             } finally {
                 mPeerHandlers.values().remove(this);
+                if (mPeerConnetionListener != null) mPeerConnetionListener.onPeerDisconnected(this);
             }
         }
 
@@ -148,5 +155,12 @@ public class NodeServer {
         protected void handleMessage(Message message) {
             mMessageHandler.handle(message, this);
         }
+    }
+
+    public interface PeerConnetionListener {
+
+        public void onPeerConnected(PeerCommunicator peer);
+
+        public void onPeerDisconnected(PeerCommunicator peer);
     }
 }
