@@ -4,20 +4,20 @@ import java.util.Objects;
 
 public class Message {
 
-    private final int mType;
+    private final int mCode;
     private final Object mData;
 
-    public Message(int type) {
-        this(type, null);
+    public Message(int code) {
+        this(code, null);
     }
 
-    public Message(int type, Object data) {
-        mType = type;
+    public Message(int code, Object data) {
+        mCode = code;
         mData = data;
     }
 
-    public int getType() {
-        return mType;
+    public int getCode() {
+        return mCode;
     }
 
     public <DataType> DataType getData() {
@@ -30,12 +30,12 @@ public class Message {
         if (o == null || getClass() != o.getClass()) return false;
 
         Message that = (Message) o;
-        return mType == that.mType && Objects.equals(mData, that.mData);
+        return mCode == that.mCode && Objects.equals(mData, that.mData);
     }
 
     @Override
     public int hashCode() {
-        int result = mType;
+        int result = mCode;
         result = 31 * result + (mData != null ? mData.hashCode() : 0);
         return result;
     }

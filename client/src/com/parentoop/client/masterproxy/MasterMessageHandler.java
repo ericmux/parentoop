@@ -22,7 +22,7 @@ public class MasterMessageHandler implements MessageHandler{
 
     @Override
     public final void handle(Message message, PeerCommunicator sender) {
-        int type = message.getType();
+        int type = message.getCode();
         switch (type) {
             case Messages.LOAD_JAR:
                 handleLoadJar(message, sender);

@@ -13,11 +13,11 @@ public class MessageRouter implements MessageHandler {
 
     @Override
     public void handle(Message message, PeerCommunicator sender) {
-        int type = message.getType();
-        MessageHandler handler = mHub.get(type);
+        int code = message.getCode();
+        MessageHandler handler = mHub.get(code);
         if (handler == null) handler = mDefaultHandler;
         if (handler == null) {
-            throw new MissingMessageHandlerException("There is no message handler registered to message type " + type);
+            throw new MissingMessageHandlerException("There is no message handler registered to message type " + code);
         }
         handler.handle(message, sender);
     }
@@ -30,8 +30,8 @@ public class MessageRouter implements MessageHandler {
         mHub.values().remove(messageHandler);
     }
 
-    public void unregisterHandlerFor(Integer messageType) {
-        mHub.remove(messageType);
+    public void unregisterHandlerFor(int messageCode) {
+        mHub.remove(messageCode);
     }
 
     public void registerDefaultHandler(MessageHandler handler) {

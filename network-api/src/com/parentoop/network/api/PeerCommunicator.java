@@ -42,11 +42,11 @@ public abstract class PeerCommunicator {
         Object data = message.getData();
         if (data instanceof Path) {
             mOutputStream.writeByte(FILE_HEADER);
-            mOutputStream.writeInt(message.getType());
+            mOutputStream.writeInt(message.getCode());
             FileTransferHelper.sendFile((Path) data, mOutputStream);
         } else if (data == null || data instanceof Serializable) {
             mOutputStream.writeByte(MESSAGE_HEADER);
-            mOutputStream.writeInt(message.getType());
+            mOutputStream.writeInt(message.getCode());
             mOutputStream.writeObject(message.getData());
         }
         mOutputStream.flush();

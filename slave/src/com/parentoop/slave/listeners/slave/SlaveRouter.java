@@ -6,7 +6,7 @@ import com.parentoop.network.api.messaging.MessageRouter;
 public class SlaveRouter extends MessageRouter {
 
     public SlaveRouter() {
-        register(Messages.RETRIEVE_VALUE, new ValueRetriever());
+        registerHandler(Messages.REQUEST_VALUES, new ValueRetriever());
     }
 
 }

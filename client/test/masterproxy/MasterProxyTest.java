@@ -121,7 +121,7 @@ public class MasterProxyTest {
         protected void handleLoadJar(Message message, PeerCommunicator sender) {
             if(mReceivedMessage == null){
                 mReceivedMessage = message;
-                mReceivedMessage = new Message(mReceivedMessage.getType(), ((File) mReceivedMessage.getData()).toPath());
+                mReceivedMessage = new Message(mReceivedMessage.getCode(), ((File) mReceivedMessage.getData()).toPath());
             } else {
                 Path jarRead = message.getData();
                 try {

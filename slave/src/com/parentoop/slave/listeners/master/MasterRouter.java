@@ -6,8 +6,8 @@ import com.parentoop.network.api.messaging.MessageRouter;
 public class MasterRouter extends MessageRouter {
 
     public MasterRouter() {
-        register(Messages.MAP_CHUNK, new MapChunk());
-        register(Messages.LOAD_JAR, new JarLoader());
-        register(Messages.LOAD_DESCRIPTOR, new DescriptorLoader());
+        registerHandler(Messages.MAP_CHUNK, new MapChunk());
+        registerHandler(Messages.LOAD_JAR, new JarLoader());
+        registerHandler(Messages.LOAD_DESCRIPTOR, new DescriptorLoader());
     }
 }

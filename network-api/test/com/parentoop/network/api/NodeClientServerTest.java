@@ -153,7 +153,7 @@ public class NodeClientServerTest {
         mNodeClient.dispatchMessage(new Message(10, fileToSend));
         waitForMessageReceive();
         assertNotNull(mReceivedMessage);
-        assertEquals(10, mReceivedMessage.getType());
+        assertEquals(10, mReceivedMessage.getCode());
 
         Path receivedFile = mReceivedMessage.getData();
         assertNotNull(receivedFile);
